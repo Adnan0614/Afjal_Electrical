@@ -3,14 +3,28 @@ import { MapPin, Navigation, Truck, CheckCircle2, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import React from "react";
 import { useI18n } from "@/lib/i18n";
 
-export default function ServiceCoverage() {
-  const { t } = useI18n();
-  const [pincodeQuery, setPincodeQuery] = useState("");
-  const [coverageResult, setCoverageResult] = useState<{ zoneKey: string; eta: string; typeKey: string } | null>(null);
+interface CoverageZone {
+  nameKey: string;
+  typeKey: string;
+  eta: string;
+  highlight: boolean;
+}
 
-  const localZones = [
+interface CoverageResult {
+  zoneKey: string;
+  eta: string;
+  typeKey: string;
+}
+
+export default function ServiceCoverage(): React.JSX.Element {
+  const { t } = useI18n();
+  const [pincodeQuery, setPincodeQuery] = useState<string>("");
+  const [coverageResult, setCoverageResult] = useState<CoverageResult | null>(null);
+
+  const localZones: CoverageZone[] = [
     { nameKey: "cov.z1", typeKey: "cov.z1t", eta: "15 - 25", highlight: true },
     { nameKey: "cov.z2", typeKey: "cov.z2t", eta: "35 - 50", highlight: true },
     { nameKey: "cov.z3", typeKey: "cov.z3t", eta: "40 - 55", highlight: false },
@@ -19,7 +33,7 @@ export default function ServiceCoverage() {
     { nameKey: "cov.z6", typeKey: "cov.z6t", eta: "60 - 90", highlight: false },
   ];
 
-  const checkCoverage = () => {
+  const checkCoverage = (): void => {
     const q = pincodeQuery.trim().toLowerCase();
     if (!q) return;
 
@@ -87,9 +101,9 @@ export default function ServiceCoverage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              {localZones.map((zone, idx) => (
+              {localZones.map((zone) => (
                 <div
-                  key={idx}
+                  key={zone.nameKey}
                   className={`p-3.5 rounded border transition-all ${
                     zone.highlight ? "bg-amber-950/20 border-amber-500/40 text-white" : "bg-[#161616] border-white/5 text-zinc-300"
                   }`}

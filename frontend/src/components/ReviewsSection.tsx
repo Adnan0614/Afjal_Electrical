@@ -10,9 +10,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiGet, apiPost } from "@/lib/api";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { logError } from "@/lib/logger";
 import type { Review, ReviewCreate } from "@/types";
 
-export default function ReviewsSection() {
+export default function ReviewsSection(): React.JSX.Element {
   const { t } = useI18n();
   const [filter, setFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,7 +43,7 @@ export default function ReviewsSection() {
       setReviewText("");
     },
     onError: (err) => {
-      console.error(err);
+      logError("ReviewsSection.submit", err);
       toast.error(t("rev.error"));
     },
   });
@@ -91,8 +92,8 @@ export default function ReviewsSection() {
               <div className="text-3xl font-heading font-black text-amber-400">4.9</div>
               <div>
                 <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star key={`summary-star-${i}`} className="w-3.5 h-3.5 fill-current" />
                   ))}
                 </div>
                 <div className="text-[11px] font-mono text-zinc-400">{t("rev.ratings")}</div>
@@ -140,8 +141,8 @@ export default function ReviewsSection() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex text-amber-400">
-                    {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                    {Array.from({ length: rev.rating }, (_, i) => (
+                      <Star key={`star-${rev.id}-${i}`} className="w-3.5 h-3.5 fill-current" />
                     ))}
                   </div>
                   {rev.verified_customer && (

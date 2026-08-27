@@ -1,0 +1,102 @@
+{
+  "iteration": 1,
+  "summary": "8/8 acceptance criteria covered; 8 browser checks + 6 backend test files (10 pytest cases), all passing.",
+  "passed": 14,
+  "failed": 0,
+  "retest_needed": false,
+  "bugs": [],
+  "action_items": [],
+  "checks": [
+    {
+      "criterion": "Homepage loads with industrial dark/amber theme and live workshop stats",
+      "name": "homepage-loads-stats-no-console-errors",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Hero/stats rendered '5,480+', '22+ Years', '45 Mins' from /api/stats; zero console errors captured."
+    },
+    {
+      "criterion": "Hindi/English language toggle works site-wide",
+      "name": "language-toggle-switches-copy",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Toggled EN<->HI on / and /owner; nav-estimator and owner-login-button text matched Devanagari range in HI and reverted in EN."
+    },
+    {
+      "criterion": "Cost Estimator produces a quote and submits a lead",
+      "name": "cost-estimator-submits-lead",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Selected equipment+HP, estimator-total-price showed numeric range; POST /api/leads -> 200, id LEAD-F40D13F5 shown in UI."
+    },
+    {
+      "criterion": "Cost Estimator produces a quote and submits a lead (API)",
+      "name": "test_tscheck_cost_estimator_lead.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /api/leads 200 -> id starts with LEAD-, status=new; missing service_type -> 422."
+    },
+    {
+      "criterion": "Emergency dispatch form submits",
+      "name": "emergency-dispatch-submits",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Filled SOS modal, POST /api/emergency-dispatch -> 200, ticket id SOS-xxxx rendered with hotline confirmation."
+    },
+    {
+      "criterion": "Emergency dispatch form submits (API)",
+      "name": "test_tscheck_emergency_dispatch.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /api/emergency-dispatch 200 -> id starts with SOS-, status=dispatched, eta_minutes>0; missing fields -> 422."
+    },
+    {
+      "criterion": "Job Status Tracker looks up a real job",
+      "name": "job-tracker-lookup-valid-and-invalid",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "AE-2024-8901 shows Alok Agrawal / 50 HP 3-Phase Induction Motor timeline; invalid id shows job-not-found panel (404 logged, handled gracefully)."
+    },
+    {
+      "criterion": "Owner dashboard PIN login",
+      "name": "owner-pin-login-and-tabs",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Wrong PIN 0000 -> 'Incorrect PIN' toast, stays on login form; PIN 2003 -> quotes/emergency/jobs/photos tabs and stat cards visible."
+    },
+    {
+      "criterion": "Owner dashboard PIN login (API)",
+      "name": "test_tscheck_owner_pin_login.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "POST /auth/owner-login {pin:2003} -> 200 authenticated=true, /auth/me confirms session; wrong pin -> 401 and /leads stays 401/403."
+    },
+    {
+      "criterion": "Owner can advance a job stage",
+      "name": "owner-can-advance-job-stage",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "Created isolated tscheck- job via POST /api/jobs, clicked owner-advance-<job_id>; POST /api/jobs/{id}/advance -> 200, dashboard card refetched to new %/stage."
+    },
+    {
+      "criterion": "Owner can advance a job stage (API)",
+      "name": "test_tscheck_job_advance.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "Owner-authed POST /api/jobs/{tscheck_job}/advance -> 200, status_percentage increased; unauthenticated call -> 401/403. Never touched seeded AE-2024-8901."
+    },
+    {
+      "criterion": "Owner can update before/after site photos",
+      "name": "owner-updates-site-photos-reflects-on-homepage",
+      "lane": "browser",
+      "status": "passed",
+      "evidence": "PUT /api/settings/media -> 200 with new tscheck- marked captions/urls; homepage before-after-section shows updated after_caption."
+    },
+    {
+      "criterion": "Owner can update before/after site photos (API)",
+      "name": "test_tscheck_settings_media.py",
+      "lane": "backend",
+      "status": "passed",
+      "evidence": "Owner-authed PUT /api/settings/media -> 200, GET /api/settings/media reflects update; unauthenticated PUT -> 401/403."
+    }
+  ]
+}

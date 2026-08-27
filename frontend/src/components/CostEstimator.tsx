@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import React from "react";
 import { Calculator, Check, Zap, Sparkles, Send, ShieldCheck, Clock, FileCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,89 +8,66 @@ import { Badge } from "@/components/ui/badge";
 import { apiPost } from "@/lib/api";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { logError } from "@/lib/logger";
+import {
+  EQUIPMENT_TYPES,
+  CLASS_H_LABEL,
+  CLASS_F_LABEL,
+  calculateEstimate,
+  capacityLabelFor,
+} from "@/lib/estimator";
+import type { EquipmentOption, EstimateResult, WireGrade } from "@/lib/estimator";
 import type { Lead, LeadCreate } from "@/types";
 
-interface EquipmentOption {
-  id: string;
-  nameKey: string;
-  descKey: string;
-  type: "hp" | "sqft" | "panel";
-  hpOptions: number[];
-  basePerHp: number;
-}
-
-const EQUIPMENT_TYPES: EquipmentOption[] = [
-  { id: "3phase_motor", nameKey: "eq.3phase", descKey: "eq.3phaseDesc", type: "hp", hpOptions: [1, 2, 3, 5, 7.5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200], basePerHp: 380 },
-  { id: "submersible_pump", nameKey: "eq.pump", descKey: "eq.pumpDesc", type: "hp", hpOptions: [3, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50], basePerHp: 440 },
-  { id: "single_phase", nameKey: "eq.single", descKey: "eq.singleDesc", type: "hp", hpOptions: [0.5, 1, 1.5, 2, 3, 5], basePerHp: 650 },
-  { id: "lt_panel", nameKey: "eq.panel", descKey: "eq.panelDesc", type: "panel", hpOptions: [1, 2, 3, 4, 5], basePerHp: 3500 },
-  { id: "commercial_wiring", nameKey: "eq.wiring", descKey: "eq.wiringDesc", type: "sqft", hpOptions: [500, 1000, 2500, 5000, 10000, 20000], basePerHp: 22 },
-];
-
-export default function CostEstimator() {
+export default function CostEstimator(): React.JSX.Element {
   const { t } = useI18n();
   const [selectedType, setSelectedType] = useState<string>("3phase_motor");
   const [selectedHp, setSelectedHp] = useState<number>(25);
-  const [wireGrade, setWireGrade] = useState<"class_h" | "class_f">("class_h");
-  const [includeSkfBearings, setIncludeSkfBearings] = useState(true);
-  const [includeDynamicBalancing, setIncludeDynamicBalancing] = useState(true);
-  const [includeVpiBaking, setIncludeVpiBaking] = useState(true);
-  const [expressTurnaround, setExpressTurnaround] = useState(false);
+  const [wireGrade, setWireGrade] = useState<WireGrade>("class_h");
+  const [includeSkfBearings, setIncludeSkfBearings] = useState<boolean>(true);
+  const [includeDynamicBalancing, setIncludeDynamicBalancing] = useState<boolean>(true);
+  const [includeVpiBaking, setIncludeVpiBaking] = useState<boolean>(true);
+  const [expressTurnaround, setExpressTurnaround] = useState<boolean>(false);
 
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [customerLocation, setCustomerLocation] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [customerName, setCustomerName] = useState<string>("");
+  const [customerPhone, setCustomerPhone] = useState<string>("");
+  const [customerLocation, setCustomerLocation] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [generatedLead, setGeneratedLead] = useState<Lead | null>(null);
 
-  const currentEquipment = useMemo(
-    () => EQUIPMENT_TYPES.find((e) => e.id === selectedType) || EQUIPMENT_TYPES[0],
+  // EQUIPMENT_TYPES is an imported module constant, so `selectedType` is the only
+  // reactive input here.
+  const currentEquipment = useMemo<EquipmentOption>(
+    () => EQUIPMENT_TYPES.find((eq) => eq.id === selectedType) ?? EQUIPMENT_TYPES[0],
     [selectedType]
   );
 
-  const handleTypeChange = (typeId: string) => {
+  const handleTypeChange = (typeId: string): void => {
     setSelectedType(typeId);
-    const equip = EQUIPMENT_TYPES.find((e) => e.id === typeId);
+    const equip = EQUIPMENT_TYPES.find((eq) => eq.id === typeId);
     if (equip && !equip.hpOptions.includes(selectedHp)) {
       setSelectedHp(equip.hpOptions[Math.floor(equip.hpOptions.length / 2)] || equip.hpOptions[0]);
     }
   };
 
-  const estimate = useMemo(() => {
-    let base = 0;
-    if (currentEquipment.type === "hp") base = selectedHp * currentEquipment.basePerHp + 650;
-    else if (currentEquipment.type === "sqft") base = selectedHp * currentEquipment.basePerHp;
-    else base = selectedHp * currentEquipment.basePerHp + 2000;
+  // Pricing lives in lib/estimator.ts; this memo only re-runs when a selection changes.
+  const estimate = useMemo<EstimateResult>(
+    () =>
+      calculateEstimate({
+        equipment: currentEquipment,
+        capacity: selectedHp,
+        wireGrade,
+        includeSkfBearings,
+        includeDynamicBalancing,
+        includeVpiBaking,
+        expressTurnaround,
+      }),
+    [currentEquipment, selectedHp, wireGrade, includeSkfBearings, includeDynamicBalancing, includeVpiBaking, expressTurnaround]
+  );
 
-    let total = base * (wireGrade === "class_h" ? 1.15 : 1.0);
+  const capacityLabel = capacityLabelFor(currentEquipment, selectedHp);
 
-    if (includeSkfBearings && currentEquipment.type === "hp") {
-      total += selectedHp <= 10 ? 800 : selectedHp <= 50 ? 1800 : 3500;
-    }
-    if (includeDynamicBalancing && currentEquipment.type === "hp") {
-      total += selectedHp <= 20 ? 600 : 1200;
-    }
-    if (includeVpiBaking) total += selectedHp <= 20 ? 500 : 1100;
-    if (expressTurnaround) total *= 1.15;
-
-    const roundedTotal = Math.round(total / 50) * 50;
-    let turnaroundKey = "est.turnaround1";
-    if (expressTurnaround) turnaroundKey = "est.turnaround2";
-    else if (selectedHp >= 100) turnaroundKey = "est.turnaround3";
-
-    return {
-      minEstimate: Math.round((roundedTotal * 0.95) / 50) * 50,
-      maxEstimate: Math.round((roundedTotal * 1.08) / 50) * 50,
-      median: roundedTotal,
-      turnaroundKey,
-    };
-  }, [currentEquipment, selectedHp, wireGrade, includeSkfBearings, includeDynamicBalancing, includeVpiBaking, expressTurnaround]);
-
-  const capacityLabel = currentEquipment.type === "sqft"
-    ? `${selectedHp} Sq. Ft.`
-    : currentEquipment.type === "panel" ? `Level ${selectedHp}` : `${selectedHp} HP`;
-
-  const handleLeadSubmit = async (sendWhatsapp = false) => {
+  const handleLeadSubmit = async (sendWhatsapp = false): Promise<void> => {
     if (!customerPhone || customerPhone.replace(/\D/g, "").length < 10) {
       toast.error(t("est.phoneError"));
       return;
@@ -104,7 +82,7 @@ export default function CostEstimator() {
         service_type: equipName,
         equipment_type: equipName,
         capacity_hp: capacityLabel,
-        wire_grade: wireGrade === "class_h" ? "Dual-Coated Class-H (180°C)" : "Standard Class-F (155°C)",
+        wire_grade: wireGrade === "class_h" ? CLASS_H_LABEL : CLASS_F_LABEL,
         estimated_cost: estimate.median,
         location: customerLocation || "Raipur / Chhattisgarh",
         details: `Addons: SKF=${includeSkfBearings}, Balancing=${includeDynamicBalancing}, VPI=${includeVpiBaking}, Express=${expressTurnaround}. Range: ₹${estimate.minEstimate} - ₹${estimate.maxEstimate}`,
@@ -121,7 +99,7 @@ export default function CostEstimator() {
         window.open(`https://wa.me/919669718100?text=${message}`, "_blank");
       }
     } catch (err) {
-      console.error(err);
+      logError("CostEstimator.submitLead", err);
       toast.error(t("est.saveError"));
     } finally {
       setIsSubmitting(false);

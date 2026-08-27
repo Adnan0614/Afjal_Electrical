@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
+import React from "react";
 
 export type Lang = "en" | "hi";
 
@@ -621,20 +622,44 @@ const I18nContext = createContext<I18nValue>({
   t: (k) => k,
 });
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(() => {
-    const stored = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
-    return stored === "hi" ? "hi" : "en";
-  });
+/**
+ * Reads/writes the language choice.
+ *
+ * This stores a two-letter UI preference only — never credentials or personal data,
+ * so localStorage is appropriate here (the owner session itself lives in an httpOnly
+ * cookie set by the backend, never in web storage). Access is wrapped because
+ * localStorage throws in private-browsing and cookie-blocked contexts.
+ */
+function readStoredLang(): Lang {
+  try {
+    if (typeof window === "undefined") return "en";
+    return window.localStorage.getItem(STORAGE_KEY) === "hi" ? "hi" : "en";
+  } catch {
+    return "en";
+  }
+}
+
+function persistLang(lang: Lang): void {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, lang);
+  } catch {
+    // Storage unavailable (private mode / blocked) — the language still applies
+    // for this session, it just won't be remembered on the next visit.
+  }
+}
+
+export function I18nProvider({ children }: { children: ReactNode }): React.JSX.Element {
+  const [lang, setLangState] = useState<Lang>(readStoredLang);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, lang);
+    persistLang(lang);
     document.documentElement.setAttribute("lang", lang);
+    // STORAGE_KEY is a module constant, not reactive state, so `lang` is the only dep.
   }, [lang]);
 
-  const setLang = (l: Lang) => setLangState(l);
-  const toggle = () => setLangState((prev) => (prev === "en" ? "hi" : "en"));
-  const t = (key: string) => {
+  const setLang = (l: Lang): void => setLangState(l);
+  const toggle = (): void => setLangState((prev) => (prev === "en" ? "hi" : "en"));
+  const t = (key: string): string => {
     const entry = DICT[key];
     if (!entry) return key;
     return entry[lang];
@@ -647,6 +672,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useI18n() {
+export function useI18n(): I18nValue {
   return useContext(I18nContext);
 }

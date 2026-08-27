@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query, Depends
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel
 from models.jobs import JobTracker, JobTrackerCreate
 from lib.db import db
@@ -47,11 +47,14 @@ async def advance_job_stage(job_id: str, _: bool = Depends(require_owner)):
     if not doc:
         raise HTTPException(status_code=404, detail=f"No repair job found matching '{clean_id}'")
 
-    steps = doc.get("steps", [])
-    next_index = next((i for i, s in enumerate(steps) if not s.get("completed")), None)
+    steps: List[Dict[str, Any]] = doc.get("steps", [])
+    pending_indices: List[int] = [i for i, s in enumerate(steps) if not s.get("completed")]
 
-    if next_index is None:
+    # Emptiness check avoids any identity-vs-equality comparison against a sentinel.
+    if not pending_indices:
         raise HTTPException(status_code=400, detail="This job is already fully completed and ready for dispatch.")
+
+    next_index: int = pending_indices[0]
 
     steps[next_index]["completed"] = True
     steps[next_index]["completed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")

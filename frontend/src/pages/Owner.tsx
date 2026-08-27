@@ -194,15 +194,15 @@ export default function Owner() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Stat cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-left">
-          {[
-            { label: t("own.statQuotes"), value: leads.length, icon: FileText, color: "text-amber-400" },
-            { label: t("own.statTickets"), value: tickets.length, icon: Siren, color: "text-red-400" },
-            { label: t("own.statJobs"), value: jobs.length, icon: Wrench, color: "text-cyan-400" },
-            { label: t("own.statValue"), value: `₹${pipelineValue.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-emerald-400" },
-          ].map((s, i) => {
+          {([
+            { label: t("own.statQuotes"), value: leads.length, icon: FileText, color: "text-amber-400", id: "quotes" },
+            { label: t("own.statTickets"), value: tickets.length, icon: Siren, color: "text-red-400", id: "tickets" },
+            { label: t("own.statJobs"), value: jobs.length, icon: Wrench, color: "text-cyan-400", id: "jobs" },
+            { label: t("own.statValue"), value: `₹${pipelineValue.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-emerald-400", id: "value" },
+          ]).map((s) => {
             const Icon = s.icon;
             return (
-              <div key={i} className="bg-[#141414] border border-white/10 rounded-md p-4" data-testid={`owner-stat-${i}`}>
+              <div key={s.id} className="bg-[#141414] border border-white/10 rounded-md p-4" data-testid={`owner-stat-${s.id}`}>
                 <Icon className={`w-4 h-4 ${s.color} mb-2`} />
                 <div className={`font-heading font-black text-2xl sm:text-3xl ${s.color}`}>{s.value}</div>
                 <div className="text-[11px] font-sans text-zinc-400">{s.label}</div>
@@ -528,7 +528,7 @@ function PhotoManager({ media }: { media: SiteMedia }) {
           <h4 className="font-heading font-bold text-base text-white uppercase">{t("own.galleryTitle")}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {form.gallery.map((g, idx) => (
-              <div key={idx} className="bg-[#181818] border border-white/10 rounded p-3.5 space-y-2">
+              <div key={`gallery-slot-${idx}`} className="bg-[#181818] border border-white/10 rounded p-3.5 space-y-2">
                 <Label className="text-[11px] font-mono text-zinc-400">{t("own.galleryLabel")}</Label>
                 <Input
                   value={g.label}

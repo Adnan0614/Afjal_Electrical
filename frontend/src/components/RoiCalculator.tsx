@@ -2,17 +2,32 @@ import { useState, useMemo } from "react";
 import { TrendingUp, Leaf, ShieldCheck, Share2, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import React from "react";
 import { useI18n } from "@/lib/i18n";
 
-export default function RoiCalculator() {
+interface RoiSummary {
+  newMotorCost: number;
+  rewindCost: number;
+  instantSavings: number;
+  savingsPercent: number;
+  annualUnitsKwh: number;
+  annualPowerBill: number;
+  paybackMonths: number;
+  co2SavedKg: number;
+}
+
+export default function RoiCalculator(): React.JSX.Element {
   const { t } = useI18n();
-  const [motorHp, setMotorHp] = useState(50);
-  const [dailyHours, setDailyHours] = useState(16);
-  const [powerTariff, setPowerTariff] = useState(7.5);
+  const [motorHp, setMotorHp] = useState<number>(50);
+  const [dailyHours, setDailyHours] = useState<number>(16);
+  const [powerTariff, setPowerTariff] = useState<number>(7.5);
 
-  const hpOptions = [5, 10, 20, 30, 50, 75, 100, 150, 200];
+  const hpOptions: number[] = [5, 10, 20, 30, 50, 75, 100, 150, 200];
 
-  const calc = useMemo(() => {
+  // Every value below is derived only from the three inputs in the dependency
+  // array; the intermediates are function-local, so they are not (and must not
+  // be) dependencies themselves.
+  const calc = useMemo<RoiSummary>(() => {
     const newMotorCost = Math.round(motorHp * 2100 + 12000);
     const rewindCost = Math.round(motorHp * 480 + 3500);
     const instantSavings = newMotorCost - rewindCost;

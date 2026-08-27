@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Dict, Any
 import uuid
 from datetime import datetime
 
@@ -47,7 +47,7 @@ class StatusCheckCreate(BaseModel):
 
 # Status check routes
 @api_router.get("/")
-async def root():
+async def root() -> Dict[str, Any]:
     return {
         "business_name": "Afjal Electrical and Rewinding Works",
         "proprietor": "Mohammad Afjal",
@@ -58,14 +58,14 @@ async def root():
     }
 
 @api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
+async def create_status_check(input: StatusCheckCreate) -> StatusCheck:
     status_dict = input.model_dump()
     status_obj = StatusCheck(**status_dict)
     _ = await db.status_checks.insert_one(status_obj.model_dump())
     return status_obj
 
 @api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
+async def get_status_checks() -> List[StatusCheck]:
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 

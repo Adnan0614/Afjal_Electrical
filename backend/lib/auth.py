@@ -27,14 +27,18 @@ def make_session_token() -> str:
 def token_is_valid(token: str | None) -> bool:
     if not token or "." not in token:
         return False
+
     issued_raw, sig = token.rsplit(".", 1)
     expected = hmac.new(_secret().encode(), issued_raw.encode(), hashlib.sha256).hexdigest()
     if not hmac.compare_digest(sig, expected):
         return False
-    try:
-        issued = int(issued_raw)
-    except ValueError:
+
+    # Parse first and return early on failure so `issued` is unambiguously bound
+    # on every path that reaches the expiry check below.
+    if not issued_raw.isdigit():
         return False
+    issued: int = int(issued_raw)
+
     return (time.time() - issued) < SESSION_TTL_SECONDS
 
 

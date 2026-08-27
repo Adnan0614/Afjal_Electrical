@@ -75,8 +75,8 @@ export default function CompanyBrochureModal({ isOpen, onClose }: CompanyBrochur
                     { t: "lic.t2", num: "NR/10464", a: "lic.a2", accent: true },
                     { t: "lic.t3", num: "22BDBPM9804K2ZH", a: "lic.a3", accent: false },
                     { t: "lic.t4", num: "000107/RPR/5/2021", a: "lic.a4", accent: false },
-                  ].map((row, i) => (
-                    <tr key={i}>
+                  ].map((row) => (
+                    <tr key={row.t}>
                       <td className="p-2.5 font-semibold text-white print:text-black">{t(row.t)}</td>
                       <td className={`p-2.5 font-bold print:text-black ${row.accent ? "text-amber-400" : "text-zinc-200"}`}>{row.num}</td>
                       <td className="p-2.5 text-zinc-400 print:text-zinc-600">{t(row.a)}</td>

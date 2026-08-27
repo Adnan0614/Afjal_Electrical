@@ -3,6 +3,7 @@ import { Sparkles, ShieldCheck, Check, AlertTriangle, ArrowLeftRight } from "luc
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api";
+import React from "react";
 import { useI18n } from "@/lib/i18n";
 import type { SiteMedia } from "@/types";
 
@@ -14,9 +15,9 @@ const FALLBACK: SiteMedia = {
   gallery: [],
 };
 
-export default function BeforeAfterShowcase() {
+export default function BeforeAfterShowcase(): React.JSX.Element {
   const { t } = useI18n();
-  const [sliderPosition, setSliderPosition] = useState(50);
+  const [sliderPosition, setSliderPosition] = useState<number>(50);
   const [activeTab, setActiveTab] = useState<"slider" | "breakdown">("slider");
 
   const { data: media = FALLBACK } = useQuery<SiteMedia>({
@@ -113,7 +114,7 @@ export default function BeforeAfterShowcase() {
             <h3 className="font-heading font-black text-xl text-white uppercase text-left">{t("ba.gallery")}</h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {media.gallery.map((g, idx) => (
-                <div key={idx} className="relative rounded-md overflow-hidden border border-white/10 group" data-testid={`gallery-item-${idx}`}>
+                <div key={`${g.label}-${g.image_url}`} className="relative rounded-md overflow-hidden border border-white/10 group" data-testid={`gallery-item-${idx}`}>
                   <img
                     src={g.image_url}
                     alt={g.label}

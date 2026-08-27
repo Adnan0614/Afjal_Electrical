@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { apiGet } from "@/lib/api";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { logError } from "@/lib/logger";
 import type { JobTracker } from "@/types";
 
 interface JobTrackerViewProps {
   initialJobId?: string;
 }
 
-export default function JobTrackerView({ initialJobId = "AE-2024-8901" }: JobTrackerViewProps) {
+export default function JobTrackerView({ initialJobId = "AE-2024-8901" }: JobTrackerViewProps): React.JSX.Element {
   const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState(initialJobId);
   const [currentJob, setCurrentJob] = useState<JobTracker | null>(null);
@@ -35,7 +36,7 @@ export default function JobTrackerView({ initialJobId = "AE-2024-8901" }: JobTra
       setCurrentJob(data);
       toast.success(`${t("trk.loaded")} #${data.job_id}`);
     } catch (err) {
-      console.error(err);
+      logError("JobTracker.lookup", err);
       setCurrentJob(null);
       toast.error(`${t("trk.noRecord")} "${term}". ${t("trk.trySample")}`);
     } finally {
@@ -207,8 +208,8 @@ export default function JobTrackerView({ initialJobId = "AE-2024-8901" }: JobTra
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 bg-[#0F0F0F]">
-                      {currentJob.test_readings.map((reading, idx) => (
-                        <tr key={idx} className="hover:bg-white/5">
+                          {currentJob.test_readings.map((reading) => (
+                            <tr key={reading.parameter} className="hover:bg-white/5">
                           <td className="p-3 text-zinc-200">{reading.parameter}</td>
                           <td className="p-3 font-bold text-amber-400">{reading.value}</td>
                           <td className="p-3 text-zinc-400">{reading.standard_spec}</td>

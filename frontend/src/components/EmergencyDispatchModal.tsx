@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiPost } from "@/lib/api";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
+import { logError } from "@/lib/logger";
 import type { EmergencyDispatch, EmergencyDispatchCreate } from "@/types";
 
 interface EmergencyDispatchModalProps {
@@ -69,7 +70,7 @@ export default function EmergencyDispatchModal({ isOpen, onClose }: EmergencyDis
       const msg = `🚨 *EMERGENCY BREAKDOWN DISPATCH SOS* 🚨%0A%0A• Ticket ID: ${result.id}%0A• Contact: ${contactName} (${phone})%0A• Facility: ${facilityName || "Factory"}%0A• Area: ${locationArea}%0A• Equipment: ${equipmentType}%0A• Issue: ${problemDescription}%0A• Priority: ${urgencyLevel}%0A%0APlease dispatch technician immediately!`;
       window.open(`https://wa.me/919669718100?text=${msg}`, "_blank");
     } catch (err) {
-      console.error(err);
+      logError("EmergencyDispatch.submit", err);
       toast.error(t("sos.sendError"));
     } finally {
       setIsSubmitting(false);

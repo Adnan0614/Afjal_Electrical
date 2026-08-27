@@ -23,6 +23,13 @@ class LeadCreate(BaseModel):
 class LeadStatusUpdate(BaseModel):
     status: LeadStatus
 
+class MonthlySales(BaseModel):
+    month: str          # "YYYY-MM"
+    quotes: int
+    won: int
+    won_value: float
+    quoted_value: float
+
 class Lead(BaseModel):
     id: str = Field(default_factory=lambda: f"LEAD-{str(uuid.uuid4())[:8].upper()}")
     name: str

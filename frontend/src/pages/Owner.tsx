@@ -15,6 +15,9 @@ import { apiGet, apiPost, apiPut, apiPatch } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import LanguageToggle from "@/components/LanguageToggle";
 import OwnerReviews from "@/components/OwnerReviews";
+import OwnerSales from "@/components/OwnerSales";
+import InvoiceDialog from "@/components/InvoiceDialog";
+import { needsFollowUp, idleDays } from "@/lib/invoice";
 import {
   LEAD_STATUSES, LEAD_STATUS_CLASS, LEAD_STATUS_LABEL_KEY, normalizeStatus,
 } from "@/lib/leadStatus";
@@ -23,14 +26,15 @@ import type {
   AuthStatus, Lead, EmergencyDispatch, JobTracker, SiteMedia, GalleryItem, StageAdvanceResult,
 } from "@/types";
 
-type Tab = "quotes" | "emergency" | "jobs" | "photos" | "reviews";
+type Tab = "quotes" | "emergency" | "jobs" | "photos" | "reviews" | "sales";
 
 export default function Owner() {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const [pin, setPin] = useState("");
   const [tab, setTab] = useState<Tab>("quotes");
-  const [statusFilter, setStatusFilter] = useState<LeadStatusValue | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<LeadStatusValue | "all" | "followup">("all");
+  const [invoiceLead, setInvoiceLead] = useState<Lead | null>(null);
 
   const { data: auth, isLoading: authLoading } = useQuery<AuthStatus>({
     queryKey: ["auth-me"],
@@ -165,8 +169,13 @@ export default function Owner() {
   const wonValue = leads
     .filter((l) => normalizeStatus(l.status) === "won")
     .reduce((sum, l) => sum + (l.estimated_cost || 0), 0);
+  const staleLeads = leads.filter((l) => needsFollowUp(l, normalizeStatus(l.status)));
   const visibleLeads =
-    statusFilter === "all" ? leads : leads.filter((l) => normalizeStatus(l.status) === statusFilter);
+    statusFilter === "all"
+      ? leads
+      : statusFilter === "followup"
+        ? staleLeads
+        : leads.filter((l) => normalizeStatus(l.status) === statusFilter);
 
   const waLink = (phone: string, text: string) =>
     `https://wa.me/91${phone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(text)}`;
@@ -241,6 +250,7 @@ export default function Owner() {
             { id: "jobs", label: t("own.tabJobs") },
             { id: "photos", label: t("own.tabPhotos") },
             { id: "reviews", label: t("own.tabReviews") },
+            { id: "sales", label: t("own.tabSales") },
           ] as { id: Tab; label: string }[]).map((tb) => (
             <button
               key={tb.id}
@@ -279,10 +289,22 @@ export default function Owner() {
                   </button>
                 );
               })}
+              <button
+                onClick={() => setStatusFilter("followup")}
+                title={t("pipe.followUpHint")}
+                className={`font-mono text-[11px] px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                  statusFilter === "followup"
+                    ? "bg-red-600 text-white font-bold border-red-600"
+                    : "bg-red-950/30 border-red-500/40 text-red-300 hover:border-red-400"
+                }`}
+                data-testid="owner-pipeline-filter-followup"
+              >
+                {t("pipe.followUp")} ({staleLeads.length})
+              </button>
             </div>
             {visibleLeads.length === 0 && (
               <div className="bg-[#141414] border border-white/10 rounded p-8 text-center text-xs text-zinc-400">
-                {t("own.noQuotes")}
+                {statusFilter === "all" ? t("own.noQuotes") : t("pipe.noneInStage")}
               </div>
             )}
             {visibleLeads.map((lead) => (
@@ -299,6 +321,14 @@ export default function Owner() {
                       <span className="text-[11px] font-mono text-zinc-500">
                         {t("own.received")}: {new Date(lead.created_at).toLocaleString("en-IN")}
                       </span>
+                      {needsFollowUp(lead, normalizeStatus(lead.status)) && (
+                        <span
+                          className="text-[10px] font-mono uppercase bg-red-600 text-white px-2 py-0.5 rounded animate-pulse"
+                          data-testid={`owner-lead-followup-${lead.id}`}
+                        >
+                          {t("pipe.followUp")} • {t("pipe.idleDays").replace("{d}", String(idleDays(lead)))}
+                        </span>
+                      )}
                     </div>
                     <div className="font-heading font-black text-xl text-white uppercase">{lead.name}</div>
                     <div className="text-xs font-mono text-zinc-300">
@@ -359,6 +389,16 @@ export default function Owner() {
                         <MessageCircle className="w-3 h-3" />
                         {t("own.whatsappCustomer")}
                       </a>
+                      {normalizeStatus(lead.status) === "won" && (
+                        <button
+                          onClick={() => setInvoiceLead(lead)}
+                          className="inline-flex items-center gap-1 text-[11px] font-mono bg-amber-500/15 border border-amber-500/50 text-amber-300 px-2.5 py-1.5 rounded hover:bg-amber-500/25 cursor-pointer"
+                          data-testid={`owner-lead-invoice-${lead.id}`}
+                        >
+                          <FileText className="w-3 h-3" />
+                          {t("inv.open")}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -500,7 +540,18 @@ export default function Owner() {
 
         {/* ---- Reviews wall manager ---- */}
         {tab === "reviews" && <OwnerReviews />}
+
+        {/* ---- Monthly sales ---- */}
+        {tab === "sales" && <OwnerSales />}
       </main>
+
+      {invoiceLead && (
+        <InvoiceDialog
+          lead={invoiceLead}
+          open={invoiceLead !== null}
+          onOpenChange={(open) => { if (!open) setInvoiceLead(null); }}
+        />
+      )}
 
       <Toaster position="bottom-left" richColors />
     </div>

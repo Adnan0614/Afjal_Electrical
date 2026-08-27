@@ -508,6 +508,40 @@ export const DICT: Dict = {
   "bro.addressValue": { en: "Nagar Palika Road, Tilda Neora, Raipur, Chhattisgarh - 493114", hi: "नगर पालिका रोड, तिल्दा नेवरा, रायपुर, छत्तीसगढ़ - 493114" },
   "bro.close": { en: "Close", hi: "बंद करें" },
 
+  // ---------- Invoice / follow-up / sales ----------
+  "inv.title": { en: "GST Tax Invoice", hi: "जीएसटी टैक्स इनवॉइस" },
+  "inv.desc": { en: "Check the amount, then print and hand it over at pickup", hi: "राशि जांचें, फिर प्रिंट करके डिलीवरी के समय दें" },
+  "inv.quoteRef": { en: "Quote Ref", hi: "कोटेशन संदर्भ" },
+  "inv.work": { en: "Description of Work", hi: "काम का विवरण" },
+  "inv.amount": { en: "Taxable Amount (₹)", hi: "कर योग्य राशि (₹)" },
+  "inv.taxable": { en: "Taxable Value", hi: "कर योग्य मूल्य" },
+  "inv.cgst": { en: "CGST @ 9%", hi: "सीजीएसटी @ 9%" },
+  "inv.sgst": { en: "SGST @ 9%", hi: "एसजीएसटी @ 9%" },
+  "inv.total": { en: "Total Payable", hi: "कुल देय" },
+  "inv.print": { en: "Print Invoice", hi: "इनवॉइस प्रिंट करें" },
+  "inv.open": { en: "Invoice", hi: "इनवॉइस" },
+  "inv.popupBlocked": { en: "Allow pop-ups to print the invoice.", hi: "इनवॉइस प्रिंट करने के लिए पॉप-अप की अनुमति दें।" },
+
+  "pipe.followUp": { en: "Needs Follow-Up", hi: "फॉलो-अप चाहिए" },
+  "pipe.idleDays": { en: "quiet for {d} days", hi: "{d} दिन से शांत" },
+  "pipe.followUpHint": { en: "Called quotes with no update for 3+ days", hi: "3+ दिन से अपडेट न हुए कॉल किए कोटेशन" },
+  "pipe.noneInStage": { en: "No quotes in this stage right now.", hi: "इस चरण में अभी कोई कोटेशन नहीं है।" },
+
+  "own.tabSales": { en: "Monthly Sales", hi: "मासिक बिक्री" },
+  "sales.desc": {
+    en: "How many quote requests came in each month and how many turned into paid jobs.",
+    hi: "हर महीने कितने कोटेशन आए और उनमें से कितने काम में बदले।",
+  },
+  "sales.totalQuotes": { en: "Quotes (24 mo)", hi: "कोटेशन (24 माह)" },
+  "sales.totalWon": { en: "Jobs Won", hi: "मिले काम" },
+  "sales.wonValue": { en: "Won Value", hi: "मिले काम की राशि" },
+  "sales.conversion": { en: "Conversion", hi: "रूपांतरण" },
+  "sales.month": { en: "Month", hi: "महीना" },
+  "sales.quotesCol": { en: "Quotes Received", hi: "प्राप्त कोटेशन" },
+  "sales.wonCol": { en: "Won", hi: "मिले" },
+  "sales.valueCol": { en: "Won ₹", hi: "राशि ₹" },
+  "sales.empty": { en: "No quote history yet.", hi: "अभी कोई कोटेशन इतिहास नहीं।" },
+
   // ---------- Lead pipeline ----------
   "pipe.new": { en: "New", hi: "नया" },
   "pipe.called": { en: "Called", hi: "कॉल किया" },

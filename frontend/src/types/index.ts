@@ -129,6 +129,14 @@ export interface ReviewFeatureUpdate {
   featured: boolean;
 }
 
+export interface MonthlySales {
+  month: string;
+  quotes: number;
+  won: number;
+  won_value: number;
+  quoted_value: number;
+}
+
 export interface WorkshopStats {
   years_experience: number;
   established_year: number;

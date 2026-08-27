@@ -101,3 +101,9 @@ Wireman NR/10464 · GSTIN 22BDBPM9804K2ZH · Gumasta 000107/RPR/5/2021
 - Lead pipeline: lead.status ∈ new|called|quoted|won|lost. `PATCH /api/leads/{lead_id}/status` (owner-only, Literal-validated → 422 on bad value); `GET /api/leads?status=` filter. Owner dashboard shows status pills per lead, per-stage filter row with counts, and a "Won Value" stat card. Legacy statuses (contacted/in_progress/completed) are normalized client-side in lib/leadStatus.ts.
 - Reviews wall: Review gained `photo_url` and `featured`. `PATCH /api/reviews/{id}/feature` and `DELETE /api/reviews/{id}` are owner-only; list sorts featured first. New owner tab "Reviews Wall" (components/OwnerReviews.tsx) publishes reviews with a job photo, pins/unpins, deletes. Public ReviewsSection renders photo cards, a highlight border for featured, and a "With Photos" filter.
 - All new strings are in lib/i18n.tsx (en+hi).
+
+## Update — Invoice, follow-up, monthly sales
+- GST invoice: won leads show an "Invoice" button → InvoiceDialog (components/InvoiceDialog.tsx). Amount pre-filled from estimated_cost, editable; CGST 9% + SGST 9% computed in lib/invoice.ts; "Print Invoice" opens a self-contained printable invoice window (buildInvoiceHtml) with workshop GSTIN/licence header.
+- Follow-up reminders: client-side rule in lib/invoice.ts (needsFollowUp = status "called" and idle ≥ 3 days from updated_at||created_at). Red pulsing badge on the lead card + "Needs Follow-Up" filter chip with count.
+- Monthly sales: `GET /api/sales/monthly` (owner-only, routers/sales.py, Mongo $group on created_at → month, won count/value, 24 months). New "Monthly Sales" owner tab (components/OwnerSales.tsx) with quotes/won/won-value/conversion cards and per-month bar rows.
+- Model MonthlySales (backend/models/leads.py) ↔ TS interface MonthlySales.

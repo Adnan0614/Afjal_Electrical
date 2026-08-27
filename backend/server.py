@@ -25,6 +25,7 @@ from routers.stats import router as stats_router
 from routers.auth import router as auth_router
 from routers.settings import router as settings_router
 from routers.sales import router as sales_router
+from routers.speech import router as speech_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -79,6 +80,7 @@ api_router.include_router(stats_router)
 api_router.include_router(auth_router)
 api_router.include_router(settings_router)
 api_router.include_router(sales_router)
+api_router.include_router(speech_router)
 
 # Include api_router into app at the very end
 app.include_router(api_router)

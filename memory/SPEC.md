@@ -107,3 +107,7 @@ Wireman NR/10464 · GSTIN 22BDBPM9804K2ZH · Gumasta 000107/RPR/5/2021
 - Follow-up reminders: client-side rule in lib/invoice.ts (needsFollowUp = status "called" and idle ≥ 3 days from updated_at||created_at). Red pulsing badge on the lead card + "Needs Follow-Up" filter chip with count.
 - Monthly sales: `GET /api/sales/monthly` (owner-only, routers/sales.py, Mongo $group on created_at → month, won count/value, 24 months). New "Monthly Sales" owner tab (components/OwnerSales.tsx) with quotes/won/won-value/conversion cards and per-month bar rows.
 - Model MonthlySales (backend/models/leads.py) ↔ TS interface MonthlySales.
+
+## Update — Voice input on the SOS form (Emergent-managed Whisper)
+- `POST /api/speech/transcribe` (routers/speech.py, multipart field `audio`): transcribes in-memory with `OpenAISpeechToText` (model **whisper-1**) from `emergentintegrations`, key `EMERGENT_LLM_KEY` in backend/.env. No `language` param → Whisper auto-detects Hindi/English. Audio is never written to disk or Mongo; only text is returned. Guards: 400 empty, 413 >25 MB, 422 no speech detected, 502 provider failure, 503 if key missing.
+- Frontend `components/VoiceInputButton.tsx`: MediaRecorder tap-to-talk (idle → recording → transcribing), posts FormData directly with fetch (FormData cannot use lib/api.ts JSON helpers), appends the transcript to the field. Wired into EmergencyDispatchModal's "Describe What Happened" textarea (`data-testid="emergency-voice-button"`). Falls back to a toast + typing if mic permission is denied.

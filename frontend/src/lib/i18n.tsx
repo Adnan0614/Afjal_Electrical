@@ -524,6 +524,16 @@ export const DICT: Dict = {
   "inv.popupBlocked": { en: "Allow pop-ups to print the invoice.", hi: "इनवॉइस प्रिंट करने के लिए पॉप-अप की अनुमति दें।" },
   "inv.printFailed": { en: "Could not open the print dialog.", hi: "प्रिंट विंडो नहीं खुल सकी।" },
 
+  // ---------- Voice input (Whisper) ----------
+  "voice.speak": { en: "Speak", hi: "बोलें" },
+  "voice.stop": { en: "Stop & Transcribe", hi: "रोकें और लिखें" },
+  "voice.listening": { en: "Listening… speak in Hindi or English.", hi: "सुन रहे हैं… हिंदी या अंग्रेजी में बोलें।" },
+  "voice.transcribing": { en: "Transcribing…", hi: "लिख रहे हैं…" },
+  "voice.done": { en: "Voice note added to the form.", hi: "आवाज फॉर्म में जोड़ दी गई।" },
+  "voice.failed": { en: "Could not transcribe the recording. Please type instead.", hi: "रिकॉर्डिंग नहीं लिखी जा सकी। कृपया टाइप करें।" },
+  "voice.micDenied": { en: "Microphone access is needed to record.", hi: "रिकॉर्ड करने के लिए माइक्रोफोन की अनुमति चाहिए।" },
+  "voice.hint": { en: "Or tap Speak and describe the fault out loud", hi: "या बोलें दबाकर खराबी बताएं" },
+
   "pipe.followUp": { en: "Needs Follow-Up", hi: "फॉलो-अप चाहिए" },
   "pipe.idleDays": { en: "quiet for {d} days", hi: "{d} दिन से शांत" },
   "pipe.followUpHint": { en: "Called quotes with no update for 3+ days", hi: "3+ दिन से अपडेट न हुए कॉल किए कोटेशन" },

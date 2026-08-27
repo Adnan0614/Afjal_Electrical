@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import VoiceInputButton from "@/components/VoiceInputButton";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { apiPost } from "@/lib/api";
@@ -241,7 +242,15 @@ export default function EmergencyDispatchModal({ isOpen, onClose }: EmergencyDis
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs font-mono text-zinc-300">{t("sos.describe")}</Label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="text-xs font-mono text-zinc-300">{t("sos.describe")}</Label>
+                <VoiceInputButton
+                  testId="emergency-voice-button"
+                  onTranscript={(text) =>
+                    setProblemDescription((prev) => (prev ? `${prev} ${text}` : text))
+                  }
+                />
+              </div>
               <Textarea
                 rows={3}
                 placeholder={t("sos.describePh")}
@@ -250,6 +259,7 @@ export default function EmergencyDispatchModal({ isOpen, onClose }: EmergencyDis
                 className="bg-[#0A0A0A] border-white/15 text-white font-sans text-xs sm:text-sm"
                 data-testid="emergency-input-description"
               />
+              <p className="text-[10px] font-mono text-zinc-500">{t("voice.hint")}</p>
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3">

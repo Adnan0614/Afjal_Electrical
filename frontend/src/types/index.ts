@@ -131,3 +131,26 @@ export interface WorkshopStats {
   whatsapp: string;
   email: string;
 }
+
+export interface AuthStatus {
+  authenticated: boolean;
+  role: string;
+}
+
+export interface GalleryItem {
+  label: string;
+  image_url: string;
+}
+
+export interface SiteMedia {
+  before_image_url: string;
+  after_image_url: string;
+  before_caption: string;
+  after_caption: string;
+  gallery: GalleryItem[];
+}
+
+export interface StageAdvanceResult {
+  job: JobTracker;
+  message: string;
+}

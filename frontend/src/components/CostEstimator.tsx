@@ -6,81 +6,47 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { apiPost } from "@/lib/api";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import type { Lead, LeadCreate } from "@/types";
 
 interface EquipmentOption {
   id: string;
-  name: string;
-  description: string;
+  nameKey: string;
+  descKey: string;
   type: "hp" | "sqft" | "panel";
   hpOptions: number[];
   basePerHp: number;
 }
 
 const EQUIPMENT_TYPES: EquipmentOption[] = [
-  {
-    id: "3phase_motor",
-    name: "3-Phase AC Induction Motor",
-    description: "Industrial squirrel-cage or slip-ring motors for mills, factories & cranes",
-    type: "hp",
-    hpOptions: [1, 2, 3, 5, 7.5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200],
-    basePerHp: 380,
-  },
-  {
-    id: "submersible_pump",
-    name: "Submersible / Borewell Pump",
-    description: "Water-tight poly-winding for agricultural & industrial water pumps",
-    type: "hp",
-    hpOptions: [3, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50],
-    basePerHp: 440,
-  },
-  {
-    id: "single_phase",
-    name: "Single Phase Motor / Monoblock",
-    description: "Domestic, shop, flour mill & workshop single-phase equipment",
-    type: "hp",
-    hpOptions: [0.5, 1, 1.5, 2, 3, 5],
-    basePerHp: 650,
-  },
-  {
-    id: "lt_panel",
-    name: "LT Distribution Panel / Star-Delta",
-    description: "Busbar overhaul, MCCB wiring, APFC capacitor bank servicing",
-    type: "panel",
-    hpOptions: [1, 2, 3, 4, 5], // represented as complexity levels
-    basePerHp: 3500,
-  },
-  {
-    id: "commercial_wiring",
-    name: "Commercial & Factory Plant Wiring",
-    description: "Licensed Class-B wiring, cable laying, earthing, load extension",
-    type: "sqft",
-    hpOptions: [500, 1000, 2500, 5000, 10000, 20000], // sqft
-    basePerHp: 22, // per sqft
-  },
+  { id: "3phase_motor", nameKey: "eq.3phase", descKey: "eq.3phaseDesc", type: "hp", hpOptions: [1, 2, 3, 5, 7.5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200], basePerHp: 380 },
+  { id: "submersible_pump", nameKey: "eq.pump", descKey: "eq.pumpDesc", type: "hp", hpOptions: [3, 5, 7.5, 10, 12.5, 15, 20, 25, 30, 40, 50], basePerHp: 440 },
+  { id: "single_phase", nameKey: "eq.single", descKey: "eq.singleDesc", type: "hp", hpOptions: [0.5, 1, 1.5, 2, 3, 5], basePerHp: 650 },
+  { id: "lt_panel", nameKey: "eq.panel", descKey: "eq.panelDesc", type: "panel", hpOptions: [1, 2, 3, 4, 5], basePerHp: 3500 },
+  { id: "commercial_wiring", nameKey: "eq.wiring", descKey: "eq.wiringDesc", type: "sqft", hpOptions: [500, 1000, 2500, 5000, 10000, 20000], basePerHp: 22 },
 ];
 
 export default function CostEstimator() {
+  const { t } = useI18n();
   const [selectedType, setSelectedType] = useState<string>("3phase_motor");
   const [selectedHp, setSelectedHp] = useState<number>(25);
   const [wireGrade, setWireGrade] = useState<"class_h" | "class_f">("class_h");
-  const [includeSkfBearings, setIncludeSkfBearings] = useState<boolean>(true);
-  const [includeDynamicBalancing, setIncludeDynamicBalancing] = useState<boolean>(true);
-  const [includeVpiBaking, setIncludeVpiBaking] = useState<boolean>(true);
-  const [expressTurnaround, setExpressTurnaround] = useState<boolean>(false);
+  const [includeSkfBearings, setIncludeSkfBearings] = useState(true);
+  const [includeDynamicBalancing, setIncludeDynamicBalancing] = useState(true);
+  const [includeVpiBaking, setIncludeVpiBaking] = useState(true);
+  const [expressTurnaround, setExpressTurnaround] = useState(false);
 
-  // Customer lead details
-  const [customerName, setCustomerName] = useState<string>("");
-  const [customerPhone, setCustomerPhone] = useState<string>("");
-  const [customerLocation, setCustomerLocation] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerLocation, setCustomerLocation] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedLead, setGeneratedLead] = useState<Lead | null>(null);
 
-  const currentEquipment = useMemo(() => {
-    return EQUIPMENT_TYPES.find((e) => e.id === selectedType) || EQUIPMENT_TYPES[0];
-  }, [selectedType]);
+  const currentEquipment = useMemo(
+    () => EQUIPMENT_TYPES.find((e) => e.id === selectedType) || EQUIPMENT_TYPES[0],
+    [selectedType]
+  );
 
-  // Handle default capacity when equipment changes
   const handleTypeChange = (typeId: string) => {
     setSelectedType(typeId);
     const equip = EQUIPMENT_TYPES.find((e) => e.id === typeId);
@@ -89,143 +55,104 @@ export default function CostEstimator() {
     }
   };
 
-  // Calculation logic
   const estimate = useMemo(() => {
     let base = 0;
-    if (currentEquipment.type === "hp") {
-      base = selectedHp * currentEquipment.basePerHp + 650; // base material & labor
-    } else if (currentEquipment.type === "sqft") {
-      base = selectedHp * currentEquipment.basePerHp;
-    } else {
-      // Panel
-      base = selectedHp * currentEquipment.basePerHp + 2000;
-    }
+    if (currentEquipment.type === "hp") base = selectedHp * currentEquipment.basePerHp + 650;
+    else if (currentEquipment.type === "sqft") base = selectedHp * currentEquipment.basePerHp;
+    else base = selectedHp * currentEquipment.basePerHp + 2000;
 
-    // Wire grade multiplier
-    const wireMultiplier = wireGrade === "class_h" ? 1.15 : 1.0;
-    let total = base * wireMultiplier;
+    let total = base * (wireGrade === "class_h" ? 1.15 : 1.0);
 
-    // Add-ons
-    let bearingsCost = 0;
     if (includeSkfBearings && currentEquipment.type === "hp") {
-      bearingsCost = selectedHp <= 10 ? 800 : selectedHp <= 50 ? 1800 : 3500;
-      total += bearingsCost;
+      total += selectedHp <= 10 ? 800 : selectedHp <= 50 ? 1800 : 3500;
     }
-
-    let balancingCost = 0;
     if (includeDynamicBalancing && currentEquipment.type === "hp") {
-      balancingCost = selectedHp <= 20 ? 600 : 1200;
-      total += balancingCost;
+      total += selectedHp <= 20 ? 600 : 1200;
     }
-
-    let vpiCost = 0;
-    if (includeVpiBaking) {
-      vpiCost = selectedHp <= 20 ? 500 : 1100;
-      total += vpiCost;
-    }
-
-    if (expressTurnaround) {
-      total *= 1.15; // 15% express charge
-    }
+    if (includeVpiBaking) total += selectedHp <= 20 ? 500 : 1100;
+    if (expressTurnaround) total *= 1.15;
 
     const roundedTotal = Math.round(total / 50) * 50;
-    const minEstimate = Math.round((roundedTotal * 0.95) / 50) * 50;
-    const maxEstimate = Math.round((roundedTotal * 1.08) / 50) * 50;
-
-    let turnaround = "24 - 48 Hours";
-    if (expressTurnaround) turnaround = "Same-Day / 12-18 Hours Express";
-    else if (selectedHp >= 100) turnaround = "3 - 5 Working Days";
+    let turnaroundKey = "est.turnaround1";
+    if (expressTurnaround) turnaroundKey = "est.turnaround2";
+    else if (selectedHp >= 100) turnaroundKey = "est.turnaround3";
 
     return {
-      minEstimate,
-      maxEstimate,
+      minEstimate: Math.round((roundedTotal * 0.95) / 50) * 50,
+      maxEstimate: Math.round((roundedTotal * 1.08) / 50) * 50,
       median: roundedTotal,
-      turnaround,
-      bearingsCost,
-      balancingCost,
-      vpiCost,
+      turnaroundKey,
     };
-  }, [
-    currentEquipment,
-    selectedHp,
-    wireGrade,
-    includeSkfBearings,
-    includeDynamicBalancing,
-    includeVpiBaking,
-    expressTurnaround,
-  ]);
+  }, [currentEquipment, selectedHp, wireGrade, includeSkfBearings, includeDynamicBalancing, includeVpiBaking, expressTurnaround]);
+
+  const capacityLabel = currentEquipment.type === "sqft"
+    ? `${selectedHp} Sq. Ft.`
+    : currentEquipment.type === "panel" ? `Level ${selectedHp}` : `${selectedHp} HP`;
 
   const handleLeadSubmit = async (sendWhatsapp = false) => {
-    if (!customerPhone || customerPhone.length < 10) {
-      toast.error("Please enter a valid 10-digit phone number so we can send the estimate.");
+    if (!customerPhone || customerPhone.replace(/\D/g, "").length < 10) {
+      toast.error(t("est.phoneError"));
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const leadPayload: LeadCreate = {
+      const equipName = t(currentEquipment.nameKey);
+      const payload: LeadCreate = {
         name: customerName || "Prospective Client",
         phone: customerPhone,
-        service_type: currentEquipment.name,
-        equipment_type: currentEquipment.name,
-        capacity_hp: currentEquipment.type === "sqft" ? `${selectedHp} Sq. Ft.` : `${selectedHp} HP`,
+        service_type: equipName,
+        equipment_type: equipName,
+        capacity_hp: capacityLabel,
         wire_grade: wireGrade === "class_h" ? "Dual-Coated Class-H (180°C)" : "Standard Class-F (155°C)",
         estimated_cost: estimate.median,
         location: customerLocation || "Raipur / Chhattisgarh",
         details: `Addons: SKF=${includeSkfBearings}, Balancing=${includeDynamicBalancing}, VPI=${includeVpiBaking}, Express=${expressTurnaround}. Range: ₹${estimate.minEstimate} - ₹${estimate.maxEstimate}`,
         source: "quote_calculator",
-        meta_data: {
-          estimate_min: estimate.minEstimate,
-          estimate_max: estimate.maxEstimate,
-          turnaround: estimate.turnaround,
-        },
+        meta_data: { estimate_min: estimate.minEstimate, estimate_max: estimate.maxEstimate },
       };
 
-      const res = await apiPost<Lead>("/leads", leadPayload);
+      const res = await apiPost<Lead>("/leads", payload);
       setGeneratedLead(res);
-      toast.success(`Quote generated! Reference ID: ${res.id}`);
+      toast.success(`${t("est.savedPrefix")} ${res.id}`);
 
       if (sendWhatsapp) {
-        const message = `Hello Mohammad Afjal bhai,%0A%0AI used the Cost Estimator on your website for *${currentEquipment.name}*.%0A%0A*Quote Details:*%0A• Equipment: ${currentEquipment.name}%0A• Capacity: ${currentEquipment.type === "sqft" ? `${selectedHp} Sq. Ft.` : `${selectedHp} HP`}%0A• Wire: ${wireGrade === "class_h" ? "100% Dual-Coated Class-H (180°C)" : "Class-F (155°C)"}%0A• Estimated Cost: ₹${estimate.minEstimate.toLocaleString()} - ₹${estimate.maxEstimate.toLocaleString()}%0A• Expected Turnaround: ${estimate.turnaround}%0A• Reference ID: ${res.id}%0A%0A*My Contact:*%0A• Name: ${customerName || "Customer"}%0A• Phone: ${customerPhone}%0A• Location: ${customerLocation || "Raipur"}%0A%0APlease confirm availability and pickup.`;
+        const message = `Hello Mohammad Afjal bhai,%0A%0AI used the Cost Estimator for *${equipName}*.%0A%0A*Quote Details:*%0A• Capacity: ${capacityLabel}%0A• Wire: ${wireGrade === "class_h" ? "100% Dual-Coated Class-H (180°C)" : "Class-F (155°C)"}%0A• Estimated Cost: ₹${estimate.minEstimate.toLocaleString()} - ₹${estimate.maxEstimate.toLocaleString()}%0A• Reference ID: ${res.id}%0A%0A*My Contact:*%0A• Name: ${customerName || "Customer"}%0A• Phone: ${customerPhone}%0A• Location: ${customerLocation || "Raipur"}%0A%0APlease confirm availability and pickup.`;
         window.open(`https://wa.me/919669718100?text=${message}`, "_blank");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Could not register quote request. Please call +91 9669718100 directly.");
+      toast.error(t("est.saveError"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const stepBadge = (n: number) => (
+    <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-bold flex items-center justify-center text-xs shrink-0">{n}</span>
+  );
+
   return (
     <section id="estimator" className="py-16 sm:py-24 bg-[#0A0A0A] border-b border-white/10" data-testid="cost-estimator-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Heading */}
+
         <div className="text-left max-w-3xl mb-12">
           <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30 font-mono text-xs uppercase mb-3">
             <Calculator className="w-3.5 h-3.5 mr-1.5" />
-            Transparent Pricing Engine
+            {t("est.badge")}
           </Badge>
-          <h2 className="font-heading font-black text-3xl sm:text-5xl uppercase text-white tracking-tight">
-            Interactive Rewinding & Wiring Cost Estimator
-          </h2>
-          <p className="text-zinc-300 text-sm sm:text-base font-sans mt-2">
-            Calculate estimated rewinding and service costs in real-time. No hidden surcharges — 100% genuine copper and factory-grade insulation guaranteed.
-          </p>
+          <h2 className="font-heading font-black text-3xl sm:text-5xl uppercase text-white tracking-tight">{t("est.heading")}</h2>
+          <p className="text-zinc-300 text-sm sm:text-base font-sans mt-2">{t("est.sub")}</p>
         </div>
 
-        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left: Input Selection Column */}
-          <div className="lg:col-span-7 bg-[#121212] border border-white/10 rounded-md p-6 sm:p-8 space-y-8">
-            
-            {/* Step 1: Equipment Type */}
+
+          {/* Inputs */}
+          <div className="lg:col-span-7 bg-[#121212] border border-white/10 rounded-md p-6 sm:p-8 space-y-8 text-left">
+
             <div className="space-y-3">
               <Label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-bold flex items-center justify-center text-xs">1</span>
-                Select Equipment / Service Type
+                {stepBadge(1)} {t("est.step1")}
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {EQUIPMENT_TYPES.map((eq) => (
@@ -240,30 +167,25 @@ export default function CostEstimator() {
                     }`}
                     data-testid={`estimator-type-${eq.id}`}
                   >
-                    <div className="font-heading font-black uppercase text-base text-white flex items-center justify-between">
-                      {eq.name}
-                      {selectedType === eq.id && <Check className="w-4 h-4 text-amber-400" />}
+                    <div className="font-heading font-black uppercase text-base text-white flex items-center justify-between gap-2">
+                      {t(eq.nameKey)}
+                      {selectedType === eq.id && <Check className="w-4 h-4 text-amber-400 shrink-0" />}
                     </div>
-                    <div className="text-[11px] text-zinc-400 font-sans mt-1 line-clamp-2">
-                      {eq.description}
-                    </div>
+                    <div className="text-[11px] text-zinc-400 font-sans mt-1">{t(eq.descKey)}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Step 2: Capacity / HP / Size */}
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-wrap justify-between items-center gap-2">
                 <Label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-bold flex items-center justify-center text-xs">2</span>
-                  Select Capacity / Horsepower (HP)
+                  {stepBadge(2)} {t("est.step2")}
                 </Label>
                 <span className="font-mono text-base font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/30">
-                  {currentEquipment.type === "sqft" ? `${selectedHp} Sq. Ft.` : currentEquipment.type === "panel" ? `Level ${selectedHp} Switchgear` : `${selectedHp} HP`}
+                  {capacityLabel}
                 </span>
               </div>
-
               <div className="flex flex-wrap gap-2 pt-1">
                 {currentEquipment.hpOptions.map((hp) => (
                   <button
@@ -283,198 +205,139 @@ export default function CostEstimator() {
               </div>
             </div>
 
-            {/* Step 3: Wire & Insulation Grade */}
             <div className="space-y-3">
               <Label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-bold flex items-center justify-center text-xs">3</span>
-                Copper Wire & Thermal Insulation Grade
+                {stepBadge(3)} {t("est.step3")}
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setWireGrade("class_h")}
                   className={`text-left p-3.5 rounded border transition-all cursor-pointer ${
-                    wireGrade === "class_h"
-                      ? "bg-amber-500/15 border-amber-500 text-white"
-                      : "bg-[#181818] border-white/10 text-zinc-300"
+                    wireGrade === "class_h" ? "bg-amber-500/15 border-amber-500 text-white" : "bg-[#181818] border-white/10 text-zinc-300"
                   }`}
                   data-testid="wire-grade-class-h"
                 >
-                  <div className="flex items-center justify-between font-heading font-black uppercase text-sm text-amber-400">
-                    Dual-Coated Class-H (180°C)
-                    <Badge className="bg-emerald-500/20 text-emerald-300 text-[10px]">Recommended</Badge>
+                  <div className="flex flex-wrap items-center justify-between gap-2 font-heading font-black uppercase text-sm text-amber-400">
+                    {t("est.classH")}
+                    <Badge className="bg-emerald-500/20 text-emerald-300 text-[10px]">{t("est.recommended")}</Badge>
                   </div>
-                  <p className="text-[11px] text-zinc-400 font-sans mt-1">
-                    100% Electrolytic Pure Copper. Maximum thermal endurance against voltage fluctuations and overload.
-                  </p>
+                  <p className="text-[11px] text-zinc-400 font-sans mt-1">{t("est.classHDesc")}</p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setWireGrade("class_f")}
                   className={`text-left p-3.5 rounded border transition-all cursor-pointer ${
-                    wireGrade === "class_f"
-                      ? "bg-amber-500/15 border-amber-500 text-white"
-                      : "bg-[#181818] border-white/10 text-zinc-300"
+                    wireGrade === "class_f" ? "bg-amber-500/15 border-amber-500 text-white" : "bg-[#181818] border-white/10 text-zinc-300"
                   }`}
                   data-testid="wire-grade-class-f"
                 >
-                  <div className="flex items-center justify-between font-heading font-black uppercase text-sm text-zinc-200">
-                    Standard Class-F (155°C)
-                  </div>
-                  <p className="text-[11px] text-zinc-400 font-sans mt-1">
-                    Standard industrial duty grade. Suitable for light-to-medium regular continuous duty.
-                  </p>
+                  <div className="font-heading font-black uppercase text-sm text-zinc-200">{t("est.classF")}</div>
+                  <p className="text-[11px] text-zinc-400 font-sans mt-1">{t("est.classFDesc")}</p>
                 </button>
               </div>
             </div>
 
-            {/* Step 4: Add-on Enhancements */}
             <div className="space-y-3">
               <Label className="text-xs font-mono uppercase text-zinc-400 flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-amber-500 text-black font-bold flex items-center justify-center text-xs">4</span>
-                Workshop Overhaul & Testing Add-ons
+                {stepBadge(4)} {t("est.step4")}
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-sans text-xs">
-                
-                <label className="flex items-start gap-2.5 p-3 rounded bg-[#181818] border border-white/10 cursor-pointer hover:border-white/20">
-                  <input
-                    type="checkbox"
-                    checked={includeDynamicBalancing}
-                    onChange={(e) => setIncludeDynamicBalancing(e.target.checked)}
-                    className="mt-0.5 rounded border-white/20 accent-[#FF7B00]"
-                    data-testid="addon-dynamic-balancing"
-                  />
-                  <div>
-                    <span className="font-semibold text-zinc-200 block">Dynamic Rotor Balancing</span>
-                    <span className="text-zinc-400 text-[11px]">Vibration reduction to &lt;1.2 mm/s RMS for silent, smooth running.</span>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-2.5 p-3 rounded bg-[#181818] border border-white/10 cursor-pointer hover:border-white/20">
-                  <input
-                    type="checkbox"
-                    checked={includeSkfBearings}
-                    onChange={(e) => setIncludeSkfBearings(e.target.checked)}
-                    className="mt-0.5 rounded border-white/20 accent-[#FF7B00]"
-                    data-testid="addon-skf-bearings"
-                  />
-                  <div>
-                    <span className="font-semibold text-zinc-200 block">SKF / NBC C3 Bearing Pair</span>
-                    <span className="text-zinc-400 text-[11px]">High-temp deep groove ball bearings fitted with grease seal.</span>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-2.5 p-3 rounded bg-[#181818] border border-white/10 cursor-pointer hover:border-white/20">
-                  <input
-                    type="checkbox"
-                    checked={includeVpiBaking}
-                    onChange={(e) => setIncludeVpiBaking(e.target.checked)}
-                    className="mt-0.5 rounded border-white/20 accent-[#FF7B00]"
-                    data-testid="addon-vpi-baking"
-                  />
-                  <div>
-                    <span className="font-semibold text-zinc-200 block">VPI Varnish & 135°C Oven Bake</span>
-                    <span className="text-zinc-400 text-[11px]">8-hour curing for moisture, dust, and acid fume protection.</span>
-                  </div>
-                </label>
-
-                <label className="flex items-start gap-2.5 p-3 rounded bg-[#181818] border border-white/10 cursor-pointer hover:border-white/20">
-                  <input
-                    type="checkbox"
-                    checked={expressTurnaround}
-                    onChange={(e) => setExpressTurnaround(e.target.checked)}
-                    className="mt-0.5 rounded border-white/20 accent-[#FF7B00]"
-                    data-testid="addon-express-turnaround"
-                  />
-                  <div>
-                    <span className="font-semibold text-amber-400 block flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Priority Express Turnaround
-                    </span>
-                    <span className="text-zinc-400 text-[11px]">Dedicated technician allocation for same-day/urgent restoration.</span>
-                  </div>
-                </label>
-
+                {[
+                  { checked: includeDynamicBalancing, set: setIncludeDynamicBalancing, tk: "est.balancing", dk: "est.balancingDesc", tid: "addon-dynamic-balancing", accent: false },
+                  { checked: includeSkfBearings, set: setIncludeSkfBearings, tk: "est.bearings", dk: "est.bearingsDesc", tid: "addon-skf-bearings", accent: false },
+                  { checked: includeVpiBaking, set: setIncludeVpiBaking, tk: "est.vpi", dk: "est.vpiDesc", tid: "addon-vpi-baking", accent: false },
+                  { checked: expressTurnaround, set: setExpressTurnaround, tk: "est.express", dk: "est.expressDesc", tid: "addon-express-turnaround", accent: true },
+                ].map((ad) => (
+                  <label key={ad.tid} className="flex items-start gap-2.5 p-3 rounded bg-[#181818] border border-white/10 cursor-pointer hover:border-white/20">
+                    <input
+                      type="checkbox"
+                      checked={ad.checked}
+                      onChange={(e) => ad.set(e.target.checked)}
+                      className="mt-0.5 rounded border-white/20 accent-[#FF7B00]"
+                      data-testid={ad.tid}
+                    />
+                    <div>
+                      <span className={`font-semibold block ${ad.accent ? "text-amber-400 flex items-center gap-1" : "text-zinc-200"}`}>
+                        {ad.accent && <Sparkles className="w-3.5 h-3.5" />}
+                        {t(ad.tk)}
+                      </span>
+                      <span className="text-zinc-400 text-[11px]">{t(ad.dk)}</span>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
-
           </div>
 
-          {/* Right: Live Calculation & Instant Lead Action */}
+          {/* Live quote */}
           <div className="lg:col-span-5 space-y-6">
-            
-            {/* Live Pricing Breakdown Card */}
             <div className="bg-gradient-to-b from-[#1E1E1E] to-[#141414] border-2 border-amber-500/50 rounded-md p-6 electric-glow space-y-5 text-left">
-              
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
                 <span className="font-mono text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 fill-current" />
-                  Estimated Workshop Quote
+                  {t("est.quoteTitle")}
                 </span>
                 <Badge variant="outline" className="text-[10px] font-mono border-emerald-500 text-emerald-400 bg-emerald-950/40">
-                  6-Month Warranty
+                  {t("est.warrantyBadge")}
                 </Badge>
               </div>
 
-              {/* Price range */}
               <div>
-                <div className="text-xs font-mono text-zinc-400">Estimated Total Investment</div>
+                <div className="text-xs font-mono text-zinc-400">{t("est.totalLabel")}</div>
                 <div className="text-3xl sm:text-4xl font-mono font-bold text-white tracking-tight mt-1" data-testid="estimator-total-price">
-                  ₹{estimate.minEstimate.toLocaleString("en-IN")} <span className="text-xl text-zinc-400 font-normal">to</span> ₹{estimate.maxEstimate.toLocaleString("en-IN")}
+                  ₹{estimate.minEstimate.toLocaleString("en-IN")} <span className="text-xl text-zinc-400 font-normal">{t("est.to")}</span> ₹{estimate.maxEstimate.toLocaleString("en-IN")}
                 </div>
-                <p className="text-xs font-sans text-emerald-400 mt-1 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Includes 100% pure copper, slot insulation, test certificate & labor
+                <p className="text-xs font-sans text-emerald-400 mt-1 flex items-start gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  {t("est.includes")}
                 </p>
               </div>
 
-              {/* Scope Summary Box */}
               <div className="bg-[#0A0A0A] border border-white/10 rounded p-3.5 space-y-2 font-mono text-xs">
-                <div className="flex justify-between text-zinc-300">
-                  <span>Equipment:</span>
-                  <strong className="text-white">{currentEquipment.name}</strong>
+                <div className="flex justify-between gap-2 text-zinc-300">
+                  <span>{t("est.equipment")}</span>
+                  <strong className="text-white text-right">{t(currentEquipment.nameKey)}</strong>
                 </div>
                 <div className="flex justify-between text-zinc-300">
-                  <span>Capacity:</span>
-                  <strong className="text-amber-400">{currentEquipment.type === "sqft" ? `${selectedHp} Sq. Ft.` : `${selectedHp} HP`}</strong>
+                  <span>{t("est.capacity")}</span>
+                  <strong className="text-amber-400">{capacityLabel}</strong>
                 </div>
-                <div className="flex justify-between text-zinc-300">
-                  <span>Wire Grade:</span>
-                  <span className="text-zinc-200">{wireGrade === "class_h" ? "Class-H (180°C)" : "Class-F"}</span>
+                <div className="flex justify-between gap-2 text-zinc-300">
+                  <span>{t("est.wireGrade")}</span>
+                  <span className="text-zinc-200 text-right">{wireGrade === "class_h" ? t("est.classH") : t("est.classF")}</span>
                 </div>
-                <div className="flex justify-between text-zinc-300">
-                  <span>Turnaround Time:</span>
-                  <strong className="text-cyan-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {estimate.turnaround}
+                <div className="flex justify-between gap-2 text-zinc-300">
+                  <span>{t("est.turnaround")}</span>
+                  <strong className="text-cyan-400 flex items-center gap-1 text-right">
+                    <Clock className="w-3 h-3 shrink-0" />
+                    {t(estimate.turnaroundKey)}
                   </strong>
                 </div>
               </div>
 
-              {/* Lead Capture form */}
               <div className="space-y-3 pt-2 border-t border-white/10">
-                <div className="text-xs font-mono uppercase text-zinc-300">
-                  Lock Estimate & Connect With Mohammad Afjal
-                </div>
+                <div className="text-xs font-mono uppercase text-zinc-300">{t("est.lockTitle")}</div>
 
                 <div className="space-y-2">
                   <Input
-                    placeholder="Your Name / Factory Name"
+                    placeholder={t("est.namePlaceholder")}
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="bg-[#0A0A0A] border-white/15 text-sm h-10 text-white font-sans"
                     data-testid="estimator-name-input"
                   />
                   <Input
-                    placeholder="Phone Number (10 digits) *"
+                    placeholder={t("est.phonePlaceholder")}
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                     className="bg-[#0A0A0A] border-white/15 text-sm h-10 text-white font-mono"
                     data-testid="estimator-phone-input"
                   />
                   <Input
-                    placeholder="Location / Plant Area (e.g., Tilda, Urla, Siltara)"
+                    placeholder={t("est.locationPlaceholder")}
                     value={customerLocation}
                     onChange={(e) => setCustomerLocation(e.target.value)}
                     className="bg-[#0A0A0A] border-white/15 text-sm h-10 text-white font-sans"
@@ -482,18 +345,16 @@ export default function CostEstimator() {
                   />
                 </div>
 
-                {/* Primary WhatsApp Action */}
                 <Button
                   onClick={() => handleLeadSubmit(true)}
                   disabled={isSubmitting}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-black text-base uppercase py-5 rounded-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer"
                   data-testid="estimator-whatsapp-submit-btn"
                 >
-                  <Send className="w-4 h-4" />
-                  Send to WhatsApp & Get Official Quote
+                  <Send className="w-4 h-4 shrink-0" />
+                  {t("est.whatsappBtn")}
                 </Button>
 
-                {/* Secondary Inward Booking */}
                 <Button
                   onClick={() => handleLeadSubmit(false)}
                   disabled={isSubmitting}
@@ -501,24 +362,20 @@ export default function CostEstimator() {
                   className="w-full border-white/20 text-zinc-200 hover:text-white bg-[#141414] font-mono text-xs py-4 cursor-pointer"
                   data-testid="estimator-register-slot-btn"
                 >
-                  <FileCheck className="w-4 h-4 text-amber-400 mr-1.5" />
-                  Save Quote & Register Workshop Slot
+                  <FileCheck className="w-4 h-4 text-amber-400 mr-1.5 shrink-0" />
+                  {t("est.saveBtn")}
                 </Button>
-
               </div>
 
               {generatedLead && (
                 <div className="bg-amber-500/10 border border-amber-500/40 p-3 rounded text-xs font-mono text-amber-300">
-                  ✓ Quote saved with reference: <strong className="text-white">{generatedLead.id}</strong>. Our team will verify technical details shortly.
+                  ✓ {t("est.savedPrefix")} <strong className="text-white">{generatedLead.id}</strong>. {t("est.savedSuffix")}
                 </div>
               )}
-
             </div>
-
           </div>
 
         </div>
-
       </div>
     </section>
   );

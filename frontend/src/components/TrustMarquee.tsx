@@ -1,15 +1,18 @@
 import { Shield, Zap, CheckCircle, Award, Activity, Truck, Cpu } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export default function TrustMarquee() {
+  const { t } = useI18n();
+
   const items = [
-    { icon: Shield, text: "Class-B Govt Contractor (08/626/B)" },
-    { icon: Zap, text: "Licensed Wireman (NR/10464)" },
-    { icon: Cpu, text: "100% Electrolytic Dual-Coated Copper" },
-    { icon: Activity, text: "5000V Megger & Surge Testing" },
-    { icon: Award, text: "Dynamic Rotor Balancing (<1.2 mm/s)" },
-    { icon: CheckCircle, text: "6-Month Written Workshop Warranty" },
-    { icon: Truck, text: "Nationwide Freight Dispatch & Pickup" },
-    { icon: Zap, text: "45-Min Raipur Industrial Emergency SOS" },
+    { icon: Shield, key: "trust.classB" },
+    { icon: Zap, key: "trust.wireman" },
+    { icon: Cpu, key: "trust.copper" },
+    { icon: Activity, key: "trust.megger" },
+    { icon: Award, key: "trust.balancing" },
+    { icon: CheckCircle, key: "trust.warranty" },
+    { icon: Truck, key: "trust.freight" },
+    { icon: Zap, key: "trust.sos" },
   ];
 
   return (
@@ -20,7 +23,7 @@ export default function TrustMarquee() {
           return (
             <div key={idx} className="flex items-center space-x-2.5 shrink-0 px-3 py-1 rounded bg-white/5 border border-white/5">
               <Icon className="w-3.5 h-3.5 text-amber-400" />
-              <span className="tracking-wide uppercase font-semibold">{item.text}</span>
+              <span className="tracking-wide uppercase font-semibold">{t(item.key)}</span>
             </div>
           );
         })}

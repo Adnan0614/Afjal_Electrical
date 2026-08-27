@@ -62,10 +62,7 @@ export default function Home() {
         onOpenLicenses={handleOpenLicenses}
       />
 
-      <FloatingActions
-        onOpenEmergency={() => setEmergencyOpen(true)}
-        onOpenLicenses={handleOpenLicenses}
-      />
+      <FloatingActions />
 
       <EmergencyDispatchModal isOpen={emergencyOpen} onClose={() => setEmergencyOpen(false)} />
       <CompanyBrochureModal isOpen={brochureOpen} onClose={() => setBrochureOpen(false)} />

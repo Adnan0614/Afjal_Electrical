@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from typing import List
 from models.emergency import EmergencyDispatch, EmergencyDispatchCreate
 from lib.db import db
+from lib.auth import require_owner
 import random
 
 router = APIRouter(prefix="/emergency-dispatch", tags=["emergency"])
@@ -24,7 +25,7 @@ async def create_emergency_dispatch(dispatch_in: EmergencyDispatchCreate):
     return dispatch_obj
 
 @router.get("", response_model=List[EmergencyDispatch])
-async def list_emergency_dispatches(limit: int = Query(50, le=200)):
+async def list_emergency_dispatches(limit: int = Query(50, le=200), _: bool = Depends(require_owner)):
     docs = await db.emergency_dispatches.find().sort("created_at", -1).to_list(limit)
     return [EmergencyDispatch(**doc) for doc in docs]
 

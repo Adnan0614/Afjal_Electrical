@@ -22,6 +22,8 @@ from routers.emergency import router as emergency_router
 from routers.jobs import router as jobs_router
 from routers.reviews import router as reviews_router
 from routers.stats import router as stats_router
+from routers.auth import router as auth_router
+from routers.settings import router as settings_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -73,6 +75,8 @@ api_router.include_router(emergency_router)
 api_router.include_router(jobs_router)
 api_router.include_router(reviews_router)
 api_router.include_router(stats_router)
+api_router.include_router(auth_router)
+api_router.include_router(settings_router)
 
 # Include api_router into app at the very end
 app.include_router(api_router)

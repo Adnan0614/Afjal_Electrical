@@ -508,6 +508,40 @@ export const DICT: Dict = {
   "bro.addressValue": { en: "Nagar Palika Road, Tilda Neora, Raipur, Chhattisgarh - 493114", hi: "नगर पालिका रोड, तिल्दा नेवरा, रायपुर, छत्तीसगढ़ - 493114" },
   "bro.close": { en: "Close", hi: "बंद करें" },
 
+  // ---------- Lead pipeline ----------
+  "pipe.new": { en: "New", hi: "नया" },
+  "pipe.called": { en: "Called", hi: "कॉल किया" },
+  "pipe.quoted": { en: "Quoted", hi: "कोटेशन दिया" },
+  "pipe.won": { en: "Won", hi: "काम मिला" },
+  "pipe.lost": { en: "Lost", hi: "छूट गया" },
+  "pipe.filterAll": { en: "All Quotes", hi: "सभी कोटेशन" },
+  "pipe.moveTo": { en: "Move to:", hi: "स्थिति बदलें:" },
+  "pipe.updated": { en: "Pipeline updated", hi: "पाइपलाइन अपडेट हो गई" },
+  "pipe.updateError": { en: "Could not update the quote status.", hi: "कोटेशन की स्थिति अपडेट नहीं हो सकी।" },
+  "pipe.wonValue": { en: "Won Value", hi: "मिले काम की राशि" },
+
+  // ---------- Owner review manager ----------
+  "own.tabReviews": { en: "Reviews Wall", hi: "समीक्षा दीवार" },
+  "own.revTitle": { en: "Publish a Customer Review", hi: "ग्राहक समीक्षा प्रकाशित करें" },
+  "own.revDesc": {
+    en: "Add a real customer review with the actual job photo. Pinned reviews appear first on the website's reviews wall.",
+    hi: "असली ग्राहक की समीक्षा उसके काम की फोटो के साथ जोड़ें। पिन की गई समीक्षा वेबसाइट पर सबसे पहले दिखती है।",
+  },
+  "own.revPhotoUrl": { en: "Job Photo Link (optional)", hi: "काम की फोटो लिंक (वैकल्पिक)" },
+  "own.revPublish": { en: "Publish Review", hi: "समीक्षा प्रकाशित करें" },
+  "own.revAdded": { en: "Review published on the website.", hi: "समीक्षा वेबसाइट पर प्रकाशित हो गई।" },
+  "own.revAddError": { en: "Could not save the review.", hi: "समीक्षा सेव नहीं हो सकी।" },
+  "own.revPin": { en: "Pin", hi: "पिन करें" },
+  "own.revUnpin": { en: "Unpin", hi: "पिन हटाएं" },
+  "own.revPinned": { en: "Review pinned to the top.", hi: "समीक्षा ऊपर पिन कर दी गई।" },
+  "own.revUnpinned": { en: "Review unpinned.", hi: "समीक्षा से पिन हटा दी गई।" },
+  "own.revDelete": { en: "Delete", hi: "हटाएं" },
+  "own.revDeleted": { en: "Review removed.", hi: "समीक्षा हटा दी गई।" },
+  "own.revFeatured": { en: "Featured", hi: "विशेष" },
+  "rev.withPhoto": { en: "Real Job Photo", hi: "असली काम की फोटो" },
+  "rev.photosOnly": { en: "With Photos", hi: "फोटो सहित" },
+  "est.waInstant": { en: "Send this quote on WhatsApp instantly", hi: "यह कोटेशन तुरंत व्हाट्सएप पर भेजें" },
+
   // ---------- Floating / footer ----------
   "float.chat": { en: "Chat on WhatsApp", hi: "व्हाट्सएप पर बात करें" },
   "float.direct": { en: "Mohammad Afjal (Direct)", hi: "मोहम्मद अफजल (सीधे)" },

@@ -11,20 +11,26 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { apiGet, apiPost, apiPut, apiPatch } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
 import LanguageToggle from "@/components/LanguageToggle";
+import OwnerReviews from "@/components/OwnerReviews";
+import {
+  LEAD_STATUSES, LEAD_STATUS_CLASS, LEAD_STATUS_LABEL_KEY, normalizeStatus,
+} from "@/lib/leadStatus";
+import type { LeadStatusValue } from "@/lib/leadStatus";
 import type {
   AuthStatus, Lead, EmergencyDispatch, JobTracker, SiteMedia, GalleryItem, StageAdvanceResult,
 } from "@/types";
 
-type Tab = "quotes" | "emergency" | "jobs" | "photos";
+type Tab = "quotes" | "emergency" | "jobs" | "photos" | "reviews";
 
 export default function Owner() {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const [pin, setPin] = useState("");
   const [tab, setTab] = useState<Tab>("quotes");
+  const [statusFilter, setStatusFilter] = useState<LeadStatusValue | "all">("all");
 
   const { data: auth, isLoading: authLoading } = useQuery<AuthStatus>({
     queryKey: ["auth-me"],
@@ -84,6 +90,16 @@ export default function Owner() {
     onError: (err: any) => {
       toast.error(err?.body?.detail || "Could not update the job stage.");
     },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: LeadStatusValue }) =>
+      apiPatch<Lead>(`/leads/${id}/status`, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["owner-leads"] });
+      toast.success(t("pipe.updated"));
+    },
+    onError: () => toast.error(t("pipe.updateError")),
   });
 
   // ---- Login gate ----
@@ -146,6 +162,11 @@ export default function Owner() {
   }
 
   const pipelineValue = leads.reduce((sum, l) => sum + (l.estimated_cost || 0), 0);
+  const wonValue = leads
+    .filter((l) => normalizeStatus(l.status) === "won")
+    .reduce((sum, l) => sum + (l.estimated_cost || 0), 0);
+  const visibleLeads =
+    statusFilter === "all" ? leads : leads.filter((l) => normalizeStatus(l.status) === statusFilter);
 
   const waLink = (phone: string, text: string) =>
     `https://wa.me/91${phone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(text)}`;
@@ -199,6 +220,7 @@ export default function Owner() {
             { label: t("own.statTickets"), value: tickets.length, icon: Siren, color: "text-red-400", id: "tickets" },
             { label: t("own.statJobs"), value: jobs.length, icon: Wrench, color: "text-cyan-400", id: "jobs" },
             { label: t("own.statValue"), value: `₹${pipelineValue.toLocaleString("en-IN")}`, icon: IndianRupee, color: "text-emerald-400", id: "value" },
+            { label: t("pipe.wonValue"), value: `₹${wonValue.toLocaleString("en-IN")}`, icon: CheckCircle2, color: "text-lime-400", id: "won-value" },
           ]).map((s) => {
             const Icon = s.icon;
             return (
@@ -218,6 +240,7 @@ export default function Owner() {
             { id: "emergency", label: t("own.tabEmergency") },
             { id: "jobs", label: t("own.tabJobs") },
             { id: "photos", label: t("own.tabPhotos") },
+            { id: "reviews", label: t("own.tabReviews") },
           ] as { id: Tab; label: string }[]).map((tb) => (
             <button
               key={tb.id}
@@ -237,12 +260,32 @@ export default function Owner() {
         {/* ---- Quotes ---- */}
         {tab === "quotes" && (
           <div className="space-y-3 text-left" data-testid="owner-quotes-panel">
-            {leads.length === 0 && (
+            {/* Pipeline filter */}
+            <div className="flex flex-wrap gap-2 pb-2">
+              {(["all", ...LEAD_STATUSES] as const).map((st) => {
+                const count = st === "all" ? leads.length : leads.filter((l) => normalizeStatus(l.status) === st).length;
+                return (
+                  <button
+                    key={st}
+                    onClick={() => setStatusFilter(st)}
+                    className={`font-mono text-[11px] px-3 py-1.5 rounded border transition-colors cursor-pointer ${
+                      statusFilter === st
+                        ? "bg-amber-500 text-black font-bold border-amber-500"
+                        : "bg-[#181818] border-white/10 text-zinc-300 hover:border-amber-400/40"
+                    }`}
+                    data-testid={`owner-pipeline-filter-${st}`}
+                  >
+                    {st === "all" ? t("pipe.filterAll") : t(LEAD_STATUS_LABEL_KEY[st])} ({count})
+                  </button>
+                );
+              })}
+            </div>
+            {visibleLeads.length === 0 && (
               <div className="bg-[#141414] border border-white/10 rounded p-8 text-center text-xs text-zinc-400">
                 {t("own.noQuotes")}
               </div>
             )}
-            {leads.map((lead) => (
+            {visibleLeads.map((lead) => (
               <div key={lead.id} className="bg-[#141414] border border-white/10 hover:border-amber-500/40 rounded-md p-5 transition-colors" data-testid={`owner-lead-${lead.id}`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="space-y-1.5">
@@ -250,7 +293,9 @@ export default function Owner() {
                       <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded">
                         {lead.id}
                       </span>
-                      <Badge className="bg-zinc-700/60 text-zinc-200 text-[10px] font-mono uppercase">{lead.status}</Badge>
+                      <Badge className={`border text-[10px] font-mono uppercase ${LEAD_STATUS_CLASS[normalizeStatus(lead.status)]}`} data-testid={`owner-lead-status-${lead.id}`}>
+                        {t(LEAD_STATUS_LABEL_KEY[normalizeStatus(lead.status)])}
+                      </Badge>
                       <span className="text-[11px] font-mono text-zinc-500">
                         {t("own.received")}: {new Date(lead.created_at).toLocaleString("en-IN")}
                       </span>
@@ -265,6 +310,29 @@ export default function Owner() {
                     {lead.details && (
                       <div className="text-[11px] font-mono text-zinc-500 max-w-2xl">{lead.details}</div>
                     )}
+
+                    {/* Pipeline stage switcher */}
+                    <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                      <span className="text-[10px] font-mono uppercase text-zinc-500 mr-1">{t("pipe.moveTo")}</span>
+                      {LEAD_STATUSES.map((st) => {
+                        const active = normalizeStatus(lead.status) === st;
+                        return (
+                          <button
+                            key={st}
+                            onClick={() => statusMutation.mutate({ id: lead.id, status: st })}
+                            disabled={active || statusMutation.isPending}
+                            className={`font-mono text-[10px] uppercase px-2.5 py-1 rounded border transition-colors ${
+                              active
+                                ? `${LEAD_STATUS_CLASS[st]} font-bold cursor-default`
+                                : "bg-[#181818] border-white/10 text-zinc-400 hover:text-white hover:border-amber-400/50 cursor-pointer"
+                            }`}
+                            data-testid={`owner-lead-set-${st}-${lead.id}`}
+                          >
+                            {t(LEAD_STATUS_LABEL_KEY[st])}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="space-y-2 text-right shrink-0">
@@ -429,6 +497,9 @@ export default function Owner() {
         {tab === "photos" && media && (
           <PhotoManager media={media} />
         )}
+
+        {/* ---- Reviews wall manager ---- */}
+        {tab === "reviews" && <OwnerReviews />}
       </main>
 
       <Toaster position="bottom-left" richColors />

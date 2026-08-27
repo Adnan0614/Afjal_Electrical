@@ -66,6 +66,7 @@ export default function ReviewsSection(): React.JSX.Element {
 
   const filteredReviews = reviews.filter((r) => {
     if (filter === "all") return true;
+    if (filter === "photos") return Boolean(r.photo_url);
     const text = (r.equipment_serviced + " " + r.company_or_location).toLowerCase();
     if (filter === "mills") return text.includes("mill") || text.includes("rice");
     if (filter === "industrial") return text.includes("rolling") || text.includes("steel") || text.includes("urla") || text.includes("siltara");
@@ -117,6 +118,7 @@ export default function ReviewsSection(): React.JSX.Element {
             { id: "mills", labelKey: "rev.filterMills" },
             { id: "industrial", labelKey: "rev.filterIndustrial" },
             { id: "pumps", labelKey: "rev.filterPumps" },
+            { id: "photos", labelKey: "rev.photosOnly" },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -135,9 +137,26 @@ export default function ReviewsSection(): React.JSX.Element {
           {filteredReviews.map((rev) => (
             <div
               key={rev.id}
-              className="bg-[#141414] border border-white/10 hover:border-amber-500/40 rounded-md p-6 flex flex-col justify-between space-y-4 transition-all"
+              className={`bg-[#141414] border rounded-md overflow-hidden flex flex-col justify-between transition-all hover:-translate-y-0.5 hover:border-amber-500/40 ${
+                rev.featured ? "border-amber-500/50 shadow-lg shadow-amber-900/20" : "border-white/10"
+              }`}
               data-testid={`review-card-${rev.id}`}
             >
+              {rev.photo_url && (
+                <div className="relative">
+                  <img
+                    src={rev.photo_url}
+                    alt={`${rev.equipment_serviced} — ${rev.author_name}`}
+                    loading="lazy"
+                    className="w-full h-44 object-cover"
+                    data-testid={`review-photo-${rev.id}`}
+                  />
+                  <span className="absolute bottom-2 left-2 text-[10px] font-mono uppercase bg-black/75 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded">
+                    {t("rev.withPhoto")}
+                  </span>
+                </div>
+              )}
+              <div className="p-6 flex flex-col justify-between space-y-4 flex-1">
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex text-amber-400">
@@ -167,6 +186,7 @@ export default function ReviewsSection(): React.JSX.Element {
                   <div className="font-heading font-black text-sm uppercase text-white">{rev.author_name}</div>
                   <div className="text-[11px] font-sans text-zinc-400">{rev.company_or_location}</div>
                 </div>
+              </div>
               </div>
             </div>
           ))}

@@ -28,7 +28,13 @@ export interface Lead {
   source: string;
   meta_data?: Record<string, any>;
   status: string;
+  owner_note?: string;
   created_at: string;
+  updated_at?: string | null;
+}
+
+export interface LeadStatusUpdate {
+  status: "new" | "called" | "quoted" | "won" | "lost";
 }
 
 export interface EmergencyDispatchCreate {
@@ -102,6 +108,8 @@ export interface ReviewCreate {
   equipment_serviced: string;
   review_text: string;
   verified_customer?: boolean;
+  photo_url?: string;
+  featured?: boolean;
 }
 
 export interface Review {
@@ -112,7 +120,13 @@ export interface Review {
   equipment_serviced: string;
   review_text: string;
   verified_customer: boolean;
+  photo_url?: string | null;
+  featured: boolean;
   created_at: string;
+}
+
+export interface ReviewFeatureUpdate {
+  featured: boolean;
 }
 
 export interface WorkshopStats {

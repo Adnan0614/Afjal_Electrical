@@ -10,6 +10,11 @@ class ReviewCreate(BaseModel):
     equipment_serviced: str
     review_text: str
     verified_customer: bool = True
+    photo_url: Optional[str] = None      # real job photo attached to the review
+    featured: bool = False               # pinned to the top of the reviews wall
+
+class ReviewFeatureUpdate(BaseModel):
+    featured: bool
 
 class Review(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -19,4 +24,6 @@ class Review(BaseModel):
     equipment_serviced: str
     review_text: str
     verified_customer: bool = True
+    photo_url: Optional[str] = None
+    featured: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)

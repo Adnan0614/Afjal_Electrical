@@ -95,3 +95,9 @@ Wireman NR/10464 · GSTIN 22BDBPM9804K2ZH · Gumasta 000107/RPR/5/2021
   don't lower that breakpoint or the brand overlaps the nav links.
 - Toaster is `position="bottom-left"` — top-right overlapped the navbar SOS button.
 - WhatsApp is a `wa.me` deep link to the real number (no paid API).
+
+## Update — Marketing pack (WhatsApp quote, lead pipeline, reviews wall)
+- WhatsApp quote send: estimator's green button saves the lead then opens wa.me/919669718100 with a formatted quote; if the save fails it still opens WhatsApp with a fallback message.
+- Lead pipeline: lead.status ∈ new|called|quoted|won|lost. `PATCH /api/leads/{lead_id}/status` (owner-only, Literal-validated → 422 on bad value); `GET /api/leads?status=` filter. Owner dashboard shows status pills per lead, per-stage filter row with counts, and a "Won Value" stat card. Legacy statuses (contacted/in_progress/completed) are normalized client-side in lib/leadStatus.ts.
+- Reviews wall: Review gained `photo_url` and `featured`. `PATCH /api/reviews/{id}/feature` and `DELETE /api/reviews/{id}` are owner-only; list sorts featured first. New owner tab "Reviews Wall" (components/OwnerReviews.tsx) publishes reviews with a job photo, pins/unpins, deletes. Public ReviewsSection renders photo cards, a highlight border for featured, and a "With Photos" filter.
+- All new strings are in lib/i18n.tsx (en+hi).

@@ -101,6 +101,11 @@ export default function CostEstimator(): React.JSX.Element {
     } catch (err) {
       logError("CostEstimator.submitLead", err);
       toast.error(t("est.saveError"));
+      // Never lose the enquiry: if the save fails, still hand the quote to WhatsApp.
+      if (sendWhatsapp) {
+        const fallback = `Hello Mohammad Afjal bhai,%0A%0AQuote request: *${t(currentEquipment.nameKey)}* (${capacityLabel})%0AEstimated: ₹${estimate.minEstimate.toLocaleString()} - ₹${estimate.maxEstimate.toLocaleString()}%0APhone: ${customerPhone}`;
+        window.open(`https://wa.me/919669718100?text=${fallback}`, "_blank");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -332,6 +337,7 @@ export default function CostEstimator(): React.JSX.Element {
                   <Send className="w-4 h-4 shrink-0" />
                   {t("est.whatsappBtn")}
                 </Button>
+                <p className="text-[11px] font-mono text-emerald-400/80 text-center">{t("est.waInstant")}</p>
 
                 <Button
                   onClick={() => handleLeadSubmit(false)}

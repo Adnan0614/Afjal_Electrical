@@ -33,13 +33,9 @@ async def lifespan(app: FastAPI):
     yield
     client.close()
 
-# Create the main app without a prefix
 app = FastAPI(lifespan=lifespan, title="Afjal Electrical and Rewinding Works API")
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-# Define Models for generic status
 class StatusCheck(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
@@ -48,7 +44,6 @@ class StatusCheck(BaseModel):
 class StatusCheckCreate(BaseModel):
     client_name: str
 
-# Status check routes
 @api_router.get("/")
 async def root() -> Dict[str, Any]:
     return {
@@ -72,7 +67,6 @@ async def get_status_checks() -> List[StatusCheck]:
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
-# Mount all feature routers under /api
 api_router.include_router(leads_router)
 api_router.include_router(emergency_router)
 api_router.include_router(jobs_router)
@@ -83,16 +77,19 @@ api_router.include_router(settings_router)
 api_router.include_router(sales_router)
 api_router.include_router(speech_router)
 api_router.include_router(quotations_router)
-
-# Include api_router into app at the very end
 app.include_router(api_router)
+
+# In production, set CORS_ORIGINS to the exact Vercel domain(s). Never use '*' with credentials.
+cors_origins = [origin.strip().rstrip('/') for origin in os.environ.get('CORS_ORIGINS', '').split(',') if origin.strip()]
+if not cors_origins:
+    cors_origins = ['http://localhost:3000']
 
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=cors_origins,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 logging.basicConfig(

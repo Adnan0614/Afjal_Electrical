@@ -28,15 +28,31 @@ export default function InvoiceDialog({ lead, open, onOpenChange }: Props): Reac
   const totals = computeTotals(Number(amount) || 0);
 
   const print = () => {
-    const win = window.open("", "_blank", "width=900,height=1000");
-    if (!win) {
-      toast.error(t("inv.popupBlocked"));
-      return;
-    }
-    win.document.write(buildInvoiceHtml({ lead, description, amount: Number(amount) || 0 }));
-    win.document.close();
-    win.focus();
-    win.print();
+    // Rendered into a sandboxed hidden iframe via srcdoc — no document.write, no
+    // script execution, and nothing injected into the dashboard's own DOM.
+    const html = buildInvoiceHtml({ lead, description, amount: Number(amount) || 0 });
+    const frame = document.createElement("iframe");
+    frame.setAttribute("aria-hidden", "true");
+    frame.setAttribute("sandbox", "allow-modals allow-same-origin");
+    frame.style.position = "fixed";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.border = "0";
+    frame.style.opacity = "0";
+    frame.srcdoc = html;
+
+    frame.onload = () => {
+      try {
+        frame.contentWindow?.focus();
+        frame.contentWindow?.print();
+      } catch {
+        toast.error(t("inv.printFailed"));
+      }
+      // Give the print dialog time to take ownership of the document.
+      window.setTimeout(() => frame.remove(), 60_000);
+    };
+
+    document.body.appendChild(frame);
   };
 
   return (

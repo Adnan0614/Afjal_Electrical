@@ -15,12 +15,12 @@ import {
   CLASS_F_LABEL,
   calculateEstimate,
   capacityLabelFor,
+  capacityChipLabel,
 } from "@/lib/estimator";
 import type { EquipmentOption, EstimateResult, WireGrade } from "@/lib/estimator";
 import type { Lead, LeadCreate } from "@/types";
 
-export default function CostEstimator(): React.JSX.Element {
-  const { t } = useI18n();
+export default function CostEstimator(): React.JSX.Element {  const { t } = useI18n();
   const [selectedType, setSelectedType] = useState<string>("3phase_motor");
   const [selectedHp, setSelectedHp] = useState<number>(25);
   const [wireGrade, setWireGrade] = useState<WireGrade>("class_h");
@@ -182,7 +182,7 @@ export default function CostEstimator(): React.JSX.Element {
                     }`}
                     data-testid={`estimator-hp-${hp}`}
                   >
-                    {currentEquipment.type === "sqft" ? `${hp} sqft` : currentEquipment.type === "panel" ? `L${hp}` : `${hp} HP`}
+                    {capacityChipLabel(currentEquipment.type, hp)}
                   </button>
                 ))}
               </div>

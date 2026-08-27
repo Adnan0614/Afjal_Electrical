@@ -170,12 +170,14 @@ export default function Owner() {
     .filter((l) => normalizeStatus(l.status) === "won")
     .reduce((sum, l) => sum + (l.estimated_cost || 0), 0);
   const staleLeads = leads.filter((l) => needsFollowUp(l, normalizeStatus(l.status)));
-  const visibleLeads =
-    statusFilter === "all"
-      ? leads
-      : statusFilter === "followup"
-        ? staleLeads
-        : leads.filter((l) => normalizeStatus(l.status) === statusFilter);
+
+  // Flat branches instead of a nested ternary — one rule per filter value.
+  const filterLeads = (): Lead[] => {
+    if (statusFilter === "all") return leads;
+    if (statusFilter === "followup") return staleLeads;
+    return leads.filter((l) => normalizeStatus(l.status) === statusFilter);
+  };
+  const visibleLeads = filterLeads();
 
   const waLink = (phone: string, text: string) =>
     `https://wa.me/91${phone.replace(/\D/g, "").slice(-10)}?text=${encodeURIComponent(text)}`;

@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import React from "react";
+import { logError } from "@/lib/logger";
 
 export type Lang = "en" | "hi";
 
@@ -521,6 +522,7 @@ export const DICT: Dict = {
   "inv.print": { en: "Print Invoice", hi: "इनवॉइस प्रिंट करें" },
   "inv.open": { en: "Invoice", hi: "इनवॉइस" },
   "inv.popupBlocked": { en: "Allow pop-ups to print the invoice.", hi: "इनवॉइस प्रिंट करने के लिए पॉप-अप की अनुमति दें।" },
+  "inv.printFailed": { en: "Could not open the print dialog.", hi: "प्रिंट विंडो नहीं खुल सकी।" },
 
   "pipe.followUp": { en: "Needs Follow-Up", hi: "फॉलो-अप चाहिए" },
   "pipe.idleDays": { en: "quiet for {d} days", hi: "{d} दिन से शांत" },
@@ -702,7 +704,8 @@ function readStoredLang(): Lang {
   try {
     if (typeof window === "undefined") return "en";
     return window.localStorage.getItem(STORAGE_KEY) === "hi" ? "hi" : "en";
-  } catch {
+  } catch (err) {
+    logError("i18n.readStoredLang", err);
     return "en";
   }
 }
@@ -710,9 +713,10 @@ function readStoredLang(): Lang {
 function persistLang(lang: Lang): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, lang);
-  } catch {
+  } catch (err) {
     // Storage unavailable (private mode / blocked) — the language still applies
     // for this session, it just won't be remembered on the next visit.
+    logError("i18n.persistLang", err);
   }
 }
 

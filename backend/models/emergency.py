@@ -1,8 +1,12 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 import uuid
-import random
+import secrets
 from datetime import datetime
+
+# Ticket ids are shown to customers and looked up without auth, so they are
+# generated with a cryptographically secure RNG rather than `random`.
+_rng = secrets.SystemRandom()
 
 class EmergencyDispatchCreate(BaseModel):
     contact_name: str
@@ -15,7 +19,7 @@ class EmergencyDispatchCreate(BaseModel):
     problem_description: str
 
 class EmergencyDispatch(BaseModel):
-    id: str = Field(default_factory=lambda: f"SOS-{random.randint(1000, 9999)}")
+    id: str = Field(default_factory=lambda: f"SOS-{_rng.randint(1000, 9999)}")
     contact_name: str
     phone: str
     facility_name: Optional[str] = None

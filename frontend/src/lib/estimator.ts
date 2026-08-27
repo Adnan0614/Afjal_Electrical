@@ -60,6 +60,13 @@ export function capacityLabelFor(equipment: EquipmentOption, capacity: number): 
   return `${capacity} HP`;
 }
 
+/** Short label used on the capacity selector chips. */
+export function capacityChipLabel(type: EquipmentOption["type"], capacity: number): string {
+  if (type === "sqft") return `${capacity} sqft`;
+  if (type === "panel") return `L${capacity}`;
+  return `${capacity} HP`;
+}
+
 export function calculateEstimate(sel: EstimatorSelection): EstimateResult {
   const { equipment, capacity } = sel;
 

@@ -1,0 +1,128 @@
+{
+  "theme": {
+    "mode": "dark",
+    "description": "Modern Industrial Electric: Sleek dark base with amber/copper accents and interactive circuit glow micro-animations. Evokes trust, precision, and elite engineering."
+  },
+  "typography": {
+    "headings": {
+      "family": "Barlow Condensed, sans-serif",
+      "weights": ["600", "800", "900"],
+      "usage": "Use for all H1, H2, H3. Apply tracking-tight or tracking-tighter for a heavy-weight industrial feel. DO NOT USE INTER FOR HEADINGS.",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800;900&display=swap');"
+    },
+    "body": {
+      "family": "IBM Plex Sans, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "Use for paragraphs, descriptions, and labels.",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap');"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400", "700"],
+      "usage": "Use for ROI Calculator numbers, Estimator values, Job ID lookup, and technical specs.",
+      "import": "@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');"
+    }
+  },
+  "colors": {
+    "archetype": "The Performance Pro / Modern Industrial",
+    "palette": {
+      "background": "#0A0A0A",
+      "foreground": "#FFFFFF",
+      "surface_dark": "#121212",
+      "surface_light": "#1E1E1E",
+      "primary": "#FF7B00",
+      "primary_hover": "#E66A00",
+      "accent_copper": "#D95B18",
+      "accent_glow": "#FF9900",
+      "circuit_cyan": "#00E5FF",
+      "border": "rgba(255, 255, 255, 0.1)",
+      "muted": "#8A8A8A"
+    },
+    "css_variables_update": {
+      "--background": "oklch(0.145 0 0)",
+      "--foreground": "oklch(0.985 0 0)",
+      "--primary": "oklch(0.65 0.18 45)",
+      "--primary-foreground": "oklch(0.145 0 0)",
+      "--card": "oklch(0.18 0 0)",
+      "--card-foreground": "oklch(0.985 0 0)",
+      "--border": "oklch(0.25 0 0)",
+      "--ring": "oklch(0.65 0.18 45)",
+      "--radius": "0.25rem"
+    },
+    "rules": [
+      "No generic full-screen gradients. Use matte dark backgrounds with targeted glow effects (e.g., radial-gradient behind a key component).",
+      "Hover states MUST have a lighter hue of the active state color.",
+      "Never use pure black #000000 without a tint. Stick to #0A0A0A (Obsidian)."
+    ]
+  },
+  "surfaces_and_micro_themes": {
+    "header": "Crystal Glass variant: bg-black/60 with backdrop-blur-xl and border-b border-white/10. NO purely transparent headers.",
+    "estimator_card": "The 'Tracing Beam' Variant. Add a glowing border effect or an inner 1px solid stroke of white/10 with an orange glow blur-md behind it.",
+    "grid_sections": "Grid Borders ('Technical' Look): border-collapse style with border-r border-b border-white/10 on items to expose the skeleton.",
+    "buttons": "Industrial Pill/Rectangle: Sharp edges (rounded-sm or rounded-none) with high-contrast text. Use subtle box-shadow for depth."
+  },
+  "layout_and_spacing": {
+    "spacing_system": "Generous Spacing: Use p-8, p-12, p-24 for padding. Inside containers, use p-6 or p-8 to prevent text collision with borders.",
+    "bento_grid": "MODE A (Tetris Grid): Use for Genius Conversion Suite (case studies, brochures). Mix square (col-span-4), tall (row-span-2), and wide (col-span-8) items.",
+    "alignment": "Mobile-First. Never center by default. Left-align text for technical descriptions. Optical alignment for icons inside buttons."
+  },
+  "motion_and_interactions": {
+    "hover_states": "Micro-animations on ALL interactive elements. Slight lift (-translate-y-1) and glow on cards.",
+    "circuit_glow": "Use Framer Motion to create 'moving energy' lines (opacity sweeps) across borders or dividers.",
+    "accessibility": "Respect prefers-reduced-motion. Ensure focus states use a high-contrast ring.",
+    "transitions": "Use specific properties like transition-transform duration-300 ease-out. NO transition-all."
+  },
+  "components": {
+    "hero": "High-impact overlay (bg-black/50 to bg-black/70) over industrial background video/image. Massive H1 (text-5xl to 6xl+) in Barlow Condensed.",
+    "emergency_dispatch_modal": "Shadcn Dialog. High contrast (Warning Red/Yellow accents). Include a pulsing 'Live' dot animation. Sticky Emergency CTA Bar at the bottom of the viewport.",
+    "estimator_and_roi_calculator": "Custom interactive forms using Shadcn Slider, Input, and Select. Use JetBrains Mono for numbers. Display immediate dynamic calculations.",
+    "status_tracker": "Vertical or horizontal timeline layout. Glowing active steps with circuit-like connecting lines.",
+    "before_after_slider": "Custom draggable component overlaid on two images (dirty vs rewound motor).",
+    "gov_badges_marquee": "react-fast-marquee with 'Editorial Ribbon' style. Low contrast pale/dark background, slow smooth drift.",
+    "whatsapp_cta": "Floating button (bottom-right) using react-icons/fa (FaWhatsapp). Bright green or matching brand copper."
+  },
+  "libraries": {
+    "icons": "react-icons (for FaWhatsapp, GoGov badges, etc.), lucide-react for standard UI.",
+    "motion": "framer-motion (for micro-animations, tracing borders, reveal effects)",
+    "marquee": "react-fast-marquee",
+    "ui": "shadcn/ui (customized for sharp edges and dark mode)"
+  },
+  "media": {
+    "image_urls": {
+      "hero_background": {
+        "url": "https://images.unsplash.com/photo-1555941911-2c0c77a44ea4",
+        "description": "Close up of a machine with a spiral design (copper/metal). Use with dark overlay."
+      },
+      "before_after_1": {
+        "url": "https://images.unsplash.com/photo-1692719094491-2746e82a8595",
+        "description": "Circular object/copper motor core. Use for 'After' showcase."
+      },
+      "industrial_background": {
+        "url": "https://images.unsplash.com/photo-1720036237390-7cec3edda585",
+        "description": "Black and white photo of a factory. Use for Service Coverage Area or About section."
+      },
+      "electric_circuit": {
+        "url": "https://images.unsplash.com/photo-1631375937044-6dd5beac01d2",
+        "description": "Motherboard/circuit in the dark. Use for ROI/Tech highlights background."
+      },
+      "emergency_arc": {
+        "url": "https://images.unsplash.com/photo-1534224039826-c7a0eda0e6b3",
+        "description": "Bright blue electrical arcs. Use for Emergency Breakdown Dispatch Modal background."
+      }
+    },
+    "rules": "Never use placeholder images. If rendering images with overlays, ensure contrast is accessible."
+  },
+  "testing": {
+    "attributes": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "You tend to converge toward generic outputs. Avoid this. Create depth through layered design elements with z-index hierarchy.",
+    "Ensure dark mode is fully supported. This is a dark-first industrial application.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Do NOT apply universal transitions (transition: all). Target specific properties.",
+    "Do NOT center align the app container. Use left-aligned layouts for technical and tabular data.",
+    "Every interaction needs micro-animations. Static = dead.",
+    "Prioritize using pre-existing components from src/components/ui.",
+    "For toasts, use the sonner component from Shadcn."
+  ]
+}

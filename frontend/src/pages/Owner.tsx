@@ -17,6 +17,7 @@ import LanguageToggle from "@/components/LanguageToggle";
 import OwnerReviews from "@/components/OwnerReviews";
 import OwnerSales from "@/components/OwnerSales";
 import InvoiceDialog from "@/components/InvoiceDialog";
+import JobNotesEditor from "@/components/JobNotesEditor";
 import { needsFollowUp, idleDays } from "@/lib/invoice";
 import {
   LEAD_STATUSES, LEAD_STATUS_CLASS, LEAD_STATUS_LABEL_KEY, normalizeStatus,
@@ -391,8 +392,22 @@ export default function Owner() {
                         <MessageCircle className="w-3 h-3" />
                         {t("own.whatsappCustomer")}
                       </a>
-                      {normalizeStatus(lead.status) === "won" && (
-                        <button
+                      {needsFollowUp(lead, normalizeStatus(lead.status)) && (
+                        <a
+                          href={waLink(
+                            lead.phone,
+                            `Hello ${lead.name}, just following up on your quote ${lead.id} for ${lead.service_type} (${lead.capacity_hp || ""}). Shall we book your workshop slot? — Mohammad Afjal, Afjal Electrical and Rewinding Works, 9669718100`
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-mono bg-red-600 text-white px-2.5 py-1.5 rounded font-bold hover:bg-red-700"
+                          data-testid={`owner-lead-nudge-${lead.id}`}
+                        >
+                          <MessageCircle className="w-3 h-3" />
+                          {t("pipe.nudge")}
+                        </a>
+                      )}
+                      {normalizeStatus(lead.status) === "won" && (                        <button
                           onClick={() => setInvoiceLead(lead)}
                           className="inline-flex items-center gap-1 text-[11px] font-mono bg-amber-500/15 border border-amber-500/50 text-amber-300 px-2.5 py-1.5 rounded hover:bg-amber-500/25 cursor-pointer"
                           data-testid={`owner-lead-invoice-${lead.id}`}
@@ -529,6 +544,7 @@ export default function Owner() {
                       )}
                     </div>
                   </div>
+                  <JobNotesEditor job={job} />
                 </div>
               );
             })}

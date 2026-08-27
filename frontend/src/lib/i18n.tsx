@@ -533,6 +533,17 @@ export const DICT: Dict = {
   "voice.failed": { en: "Could not transcribe the recording. Please type instead.", hi: "रिकॉर्डिंग नहीं लिखी जा सकी। कृपया टाइप करें।" },
   "voice.micDenied": { en: "Microphone access is needed to record.", hi: "रिकॉर्ड करने के लिए माइक्रोफोन की अनुमति चाहिए।" },
   "voice.hint": { en: "Or tap Speak and describe the fault out loud", hi: "या बोलें दबाकर खराबी बताएं" },
+  "est.notesLabel": { en: "Motor problem (type or speak)", hi: "मोटर की समस्या (लिखें या बोलें)" },
+  "est.notesPlaceholder": {
+    en: "e.g. Motor humming and tripping the starter after 10 minutes…",
+    hi: "जैसे: मोटर 10 मिनट बाद आवाज करती है और स्टार्टर ट्रिप हो जाता है…",
+  },
+  "own.notesLabel": { en: "Technician notes (type or speak)", hi: "तकनीशियन नोट्स (लिखें या बोलें)" },
+  "own.notesPlaceholder": { en: "Winding checked, bearings replaced…", hi: "वाइंडिंग जांची, बेयरिंग बदले…" },
+  "own.saveNotes": { en: "Save Notes", hi: "नोट्स सेव करें" },
+  "own.notesSaved": { en: "Notes saved — the customer's tracker is updated.", hi: "नोट्स सेव हो गए — ग्राहक का ट्रैकर अपडेट है।" },
+  "own.notesError": { en: "Could not save the notes.", hi: "नोट्स सेव नहीं हो सके।" },
+  "pipe.nudge": { en: "Nudge on WhatsApp", hi: "व्हाट्सएप पर याद दिलाएं" },
 
   "pipe.followUp": { en: "Needs Follow-Up", hi: "फॉलो-अप चाहिए" },
   "pipe.idleDays": { en: "quiet for {d} days", hi: "{d} दिन से शांत" },

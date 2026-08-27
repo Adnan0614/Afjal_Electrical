@@ -111,3 +111,9 @@ Wireman NR/10464 · GSTIN 22BDBPM9804K2ZH · Gumasta 000107/RPR/5/2021
 ## Update — Voice input on the SOS form (Emergent-managed Whisper)
 - `POST /api/speech/transcribe` (routers/speech.py, multipart field `audio`): transcribes in-memory with `OpenAISpeechToText` (model **whisper-1**) from `emergentintegrations`, key `EMERGENT_LLM_KEY` in backend/.env. No `language` param → Whisper auto-detects Hindi/English. Audio is never written to disk or Mongo; only text is returned. Guards: 400 empty, 413 >25 MB, 422 no speech detected, 502 provider failure, 503 if key missing.
 - Frontend `components/VoiceInputButton.tsx`: MediaRecorder tap-to-talk (idle → recording → transcribing), posts FormData directly with fetch (FormData cannot use lib/api.ts JSON helpers), appends the transcript to the field. Wired into EmergencyDispatchModal's "Describe What Happened" textarea (`data-testid="emergency-voice-button"`). Falls back to a toast + typing if mic permission is denied.
+
+## Update — Voice quote notes, dictated job notes, follow-up nudge
+- Cost estimator: new "Motor problem (type or speak)" textarea with VoiceInputButton; text is appended into the lead's `details` as "Customer note: …".
+- Job notes: `PATCH /api/jobs/{job_id}/notes` (owner-only, body `{technician_notes}`, 404 on unknown job) updates `technician_notes`, visible on the public job tracker. UI: components/JobNotesEditor.tsx inside each owner job card, with mic dictation.
+- Follow-up nudge: stale leads (called + idle ≥3 days) show a red "Nudge on WhatsApp" button with a pre-filled reminder to the customer's own number.
+- Seed note: LEAD-STALE001 exists in the DB as a deliberately stale demo lead (created/updated 6 days back) to exercise the follow-up UI.

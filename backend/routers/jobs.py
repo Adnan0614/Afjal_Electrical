@@ -17,6 +17,10 @@ class StageAdvanceResult(BaseModel):
     message: str
 
 
+class JobNotesUpdate(BaseModel):
+    technician_notes: str
+
+
 @router.get("", response_model=List[JobTracker])
 async def list_jobs(phone: Optional[str] = None, limit: int = Query(50, le=100)):
     query = {}
@@ -79,6 +83,27 @@ async def advance_job_stage(job_id: str, _: bool = Depends(require_owner)):
         job=JobTracker(**updated),
         message=f"'{completed_titles[-1]}' marked complete. Job is now at {new_pct}%.",
     )
+
+
+@router.patch("/{job_id}/notes", response_model=JobTracker)
+async def update_job_notes(
+    job_id: str,
+    payload: JobNotesUpdate,
+    _: bool = Depends(require_owner),
+) -> JobTracker:
+    """Owner only — replace the technician notes shown on the customer's tracker."""
+    clean_id = job_id.strip()
+    doc = await db.job_trackers.find_one({"job_id": {"$regex": f"^{clean_id}$", "$options": "i"}})
+    if not doc:
+        raise HTTPException(status_code=404, detail=f"No repair job found matching '{clean_id}'")
+
+    notes = payload.technician_notes.strip()
+    await db.job_trackers.update_one(
+        {"job_id": doc["job_id"]},
+        {"$set": {"technician_notes": notes, "updated_at": datetime.now(timezone.utc)}},
+    )
+    doc["technician_notes"] = notes
+    return JobTracker(**doc)
 
 
 @router.post("", response_model=JobTracker)

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import VoiceInputButton from "@/components/VoiceInputButton";
 import { apiPost } from "@/lib/api";
 import { toast } from "sonner";
 import { useI18n } from "@/lib/i18n";
@@ -32,6 +34,7 @@ export default function CostEstimator(): React.JSX.Element {  const { t } = useI
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerLocation, setCustomerLocation] = useState<string>("");
+  const [problemNotes, setProblemNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [generatedLead, setGeneratedLead] = useState<Lead | null>(null);
 
@@ -85,7 +88,9 @@ export default function CostEstimator(): React.JSX.Element {  const { t } = useI
         wire_grade: wireGrade === "class_h" ? CLASS_H_LABEL : CLASS_F_LABEL,
         estimated_cost: estimate.median,
         location: customerLocation || "Raipur / Chhattisgarh",
-        details: `Addons: SKF=${includeSkfBearings}, Balancing=${includeDynamicBalancing}, VPI=${includeVpiBaking}, Express=${expressTurnaround}. Range: ₹${estimate.minEstimate} - ₹${estimate.maxEstimate}`,
+        details: `Addons: SKF=${includeSkfBearings}, Balancing=${includeDynamicBalancing}, VPI=${includeVpiBaking}, Express=${expressTurnaround}. Range: ₹${estimate.minEstimate} - ₹${estimate.maxEstimate}${
+          problemNotes.trim() ? `. Customer note: ${problemNotes.trim()}` : ""
+        }`,
         source: "quote_calculator",
         meta_data: { estimate_min: estimate.minEstimate, estimate_max: estimate.maxEstimate },
       };
@@ -326,6 +331,23 @@ export default function CostEstimator(): React.JSX.Element {  const { t } = useI
                     className="bg-[#0A0A0A] border-white/15 text-sm h-10 text-white font-sans"
                     data-testid="estimator-location-input"
                   />
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[11px] font-mono uppercase text-zinc-400">{t("est.notesLabel")}</span>
+                      <VoiceInputButton
+                        testId="estimator-voice-button"
+                        onTranscript={(text) => setProblemNotes((prev) => (prev ? `${prev} ${text}` : text))}
+                      />
+                    </div>
+                    <Textarea
+                      rows={2}
+                      placeholder={t("est.notesPlaceholder")}
+                      value={problemNotes}
+                      onChange={(e) => setProblemNotes(e.target.value)}
+                      className="bg-[#0A0A0A] border-white/15 text-white font-sans text-xs"
+                      data-testid="estimator-notes-input"
+                    />
+                  </div>
                 </div>
 
                 <Button

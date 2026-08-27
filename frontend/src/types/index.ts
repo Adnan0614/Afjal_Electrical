@@ -137,6 +137,75 @@ export interface MonthlySales {
   quoted_value: number;
 }
 
+export type QuotationStatus = "draft" | "sent" | "approved" | "ordered" | "invoiced";
+export type WorkItemStatus = "pending" | "in_progress" | "completed";
+
+export interface QuoteOption {
+  id: string;
+  product_name: string;
+  brand?: string;
+  model?: string;
+  specifications?: string;
+  quantity: number;
+  unit_price: number;
+  tax_percent: number;
+  discount_percent: number;
+  supplier?: string;
+  warranty?: string;
+  delivery_time?: string;
+  remarks?: string;
+}
+
+export interface WorkItem {
+  id: string;
+  description: string;
+  quantity: number;
+  unit: string;
+  rate: number;
+  material_cost: number;
+  labour_cost: number;
+  discount_percent: number;
+  tax_percent: number;
+  status: WorkItemStatus;
+  remarks?: string;
+}
+
+export interface QuotationCreate {
+  customer_name: string;
+  customer_phone: string;
+  customer_location?: string;
+  requirement: string;
+  lead_id?: string;
+}
+
+export interface QuotationUpdate {
+  customer_name?: string;
+  customer_phone?: string;
+  customer_location?: string;
+  requirement?: string;
+  status?: QuotationStatus;
+  selected_option_id?: string;
+  options?: QuoteOption[];
+  work_items?: WorkItem[];
+  notes?: string;
+}
+
+export interface Quotation {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_location?: string;
+  requirement: string;
+  lead_id?: string | null;
+  status: QuotationStatus;
+  selected_option_id?: string | null;
+  options: QuoteOption[];
+  work_items: WorkItem[];
+  notes?: string | null;
+  created_at: string;
+  updated_at?: string | null;
+}
+
 export interface WorkshopStats {
   years_experience: number;
   established_year: number;
